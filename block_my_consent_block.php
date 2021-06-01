@@ -43,15 +43,13 @@ class block_my_consent_block extends block_base
         
       //Put standard email in DB, if not already in there
          $check_mail = $DB->get_record('disea_mail', array('courseid' => $PAGE->course->id));
-         $dataobject = new stdClass();
-         $dataobject->courseid = $PAGE->course->id;
-         $dataobject->email = 'sven.milde@th-luebeck.de';
          
          if(!$check_mail) {
+             $dataobject = new stdClass();
+             $dataobject->courseid = $PAGE->course->id;
+             $dataobject->email = 'sven.milde@th-luebeck.de';
              $DB->insert_record('disea_mail', $dataobject);
          }
-        
-        
 
         // url to redirect to consent
         $url = new moodle_url('/blocks/my_consent_block/consent.php', array(
@@ -96,18 +94,13 @@ class block_my_consent_block extends block_base
                 //If new email is submitted, put email in database
                 if ($fromform = $mform->get_data()){
                     $usermail = $DB->get_record('disea_mail', array('courseid' => $PAGE->course->id));
-                    var_dump($usermail);
-                    
                     $usermail->email = $fromform->emailtext;
                     $DB->update_record('disea_mail', $usermail);
                 }
-                
-                
+                //Show form in block
                 $content .= $mform->render();
             } 
         }
-        
-       
 
         if ($this->content !== NULL) {
             return $this->content;
