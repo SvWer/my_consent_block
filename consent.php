@@ -76,28 +76,28 @@ if($mform->is_cancelled()) {
         /**/
         //If we need a pseudonymisation list: create it here
         if($choice == 1) {
-            $userobj = new stdClass();
-            //create object for db entry and string for Hash
-            $user_str = '';
-            $m_user = $DB ->get_record('user', array('id' => $USER->id));
-            $userobj->userid = $USER->id;
-            $user_str .= $USER->id . ';';
-            $userobj->firstname = $m_user->firstname;
-            $user_str .= $m_user->firstname . ';';
-            $userobj->middlename = $m_user->middlename;
-            $user_str .= $m_user->middlename . ';';
-            $userobj->lastname = $m_user->lastname;
-            $user_str .= $m_user->lastname . ';';
-            $userobj->email = $m_user->email;
-            $user_str .= $m_user->email . ';';
-            //create hash
-            $hash = hash('sha256', $user_str, false);
-            $userobj->hash = $hash;
-            $DB->insert_record('disea_pseudo', $userobj);
-            
+            if(!$DB->get_record('disea_pseudo', array('userid'=>$USER->id))) {
+                $userobj = new stdClass();
+                //create object for db entry and string for Hash
+                $user_str = '';
+                $m_user = $DB ->get_record('user', array('id' => $USER->id));
+                $userobj->userid = $USER->id;
+                $user_str .= $USER->id . ';';
+                $userobj->firstname = $m_user->firstname;
+                $user_str .= $m_user->firstname . ';';
+                $userobj->middlename = $m_user->middlename;
+                $user_str .= $m_user->middlename . ';';
+                $userobj->lastname = $m_user->lastname;
+                $user_str .= $m_user->lastname . ';';
+                $userobj->email = $m_user->email;
+                $user_str .= $m_user->email . ';';
+                //create hash
+                $hash = hash('sha256', $user_str, false);
+                $userobj->hash = $hash;
+                $DB->insert_record('disea_pseudo', $userobj);
+            }            
         }
         /**/
-        
         
         redirect($courseurl, get_string('database_insert', 'block_my_consent_block'));
     } else {
@@ -105,14 +105,39 @@ if($mform->is_cancelled()) {
         $user->choice = $choice;
         $user->timemodified = time();
         $DB->update_record('disea_consent', $user);
-        redirect($courseurl, get_string('database_update', 'block_my_consent_block'));
         
         /**/
         //If we need pseudonymisation list and user changes to 'no', delete entry
         if($choice == 0) {
-            $DB->delete_records('disea_pseudo', array('userid' => $USER->id));
+            //If user declines consent in all courses he will be deleted in the pseudo table
+            if(!$DB->get_record('disea_consent', array('userid'=> $USER->id, 'choice'=>1))) {
+                $DB->delete_records('disea_pseudo', array('userid' => $USER->id));
+            }
+        } else {
+            $t = $DB->get_record('disea_pseudo', array('userid'=>$USER->id));
+            if(!$t) {
+                $userobj = new stdClass();
+                //create object for db entry and string for Hash
+                $user_str = '';
+                $m_user = $DB ->get_record('user', array('id' => $USER->id));
+                $userobj->userid = $USER->id;
+                $user_str .= $USER->id . ';';
+                $userobj->firstname = $m_user->firstname;
+                $user_str .= $m_user->firstname . ';';
+                $userobj->middlename = $m_user->middlename;
+                $user_str .= $m_user->middlename . ';';
+                $userobj->lastname = $m_user->lastname;
+                $user_str .= $m_user->lastname . ';';
+                $userobj->email = $m_user->email;
+                $user_str .= $m_user->email . ';';
+                //create hash
+                $hash = hash('sha256', $user_str, false);
+                $userobj->hash = $hash;
+                $DB->insert_record('disea_pseudo', $userobj);
+            }
         }
         /**/
+        redirect($courseurl, get_string('database_update', 'block_my_consent_block'));
     }
 }
 
