@@ -14,4 +14,7 @@ defined('MOODLE_INTERNAL') || die();
 $messageproviders = array(
     'logdata_disea' => array(
     ),
+    'pseudodata_disea' => array(
+        
+    ),
 );

@@ -48,7 +48,7 @@ class log_task extends \core\task\scheduled_task {
                     }
                 }
             }
-            //If there is no user in this course how signed the consent with yes, skip sending the email
+            //If there is no user in this course who signed the consent with yes, skip sending the email
             if($where === 'WHERE (') {
                 continue;
             } else {
@@ -57,7 +57,7 @@ class log_task extends \core\task\scheduled_task {
             //Create full query to get all the logdata
             $query = 'SELECT lsl.id, lsl.eventname, lsl.component, lsl.action, lsl.target, lsl.objecttable, '.
                     'lsl.objectid, lsl.crud, lsl.edulevel, lsl.contextid, lsl.contextlevel, lsl.contextinstanceid, '.
-                    'lsl.userid, lsl.courseid, lsl.relateduserid, lsl.anonymous, lsl. other, lsl.timecreated, '.
+                    'lsl.userid, lsl.courseid, lsl.relateduserid, lsl.anonymous, lsl.other, lsl.timecreated, '.
                     'lsl.origin, lsl.ip, lsl.realuserid FROM mdl_logstore_standard_log lsl '. $where . ' AND lsl.courseid = '. $m->courseid;
             //get Logdata from database
             $log_data = $DB->get_records_sql($query);
@@ -66,7 +66,7 @@ class log_task extends \core\task\scheduled_task {
             //Create CSV-File from logdata
             $fh = fopen('php://temp', 'rw');
             fputcsv($fh, array('id','eventname','component','action','target',
-                'obejttable','obejtid','crud','edulevel','contextid',
+                'obejttable','objectid','crud','edulevel','contextid',
                 'contextlevel','contextinstanceid','userid','courseid',
                 'relateduserid','anonymous','other','timecreated',
                 'origin','ip','realuserid'));

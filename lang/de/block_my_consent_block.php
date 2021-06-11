@@ -71,5 +71,6 @@ $string['choice_no'] = 'Sie haben die Einwilligung abgelehnt';
 $string['choice_yes'] = 'Sie haben die Einwilligung angenommen';
 
 $string['log_task_name'] = 'Disea Log Task';
+$string['pseudo_task_name'] = 'Disea Pseudonymisation Task';
 
 $string['messageprovider'] = 'Disea Message Provider';

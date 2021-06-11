@@ -29,5 +29,20 @@
       </KEYS>
     </TABLE>
     
+    <TABLE NAME="disea_pseudo" COMMENT="each record is a user with a generated hash value">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="firstname" TYPE="char" LENGTH="100"  NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="middlename" TYPE="char" LENGTH="100"  NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="lastname" TYPE="char" LENGTH="100"  NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="email" TYPE="char" LENGTH="100"  NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="hash" TYPE="char" LENGTH="256"  NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+      	<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    
   </TABLES>
 </XMLDB>
