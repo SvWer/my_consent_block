@@ -31,6 +31,15 @@ class log_task extends \core\task\scheduled_task {
         $email = $DB->get_records('disea_mail');
         $emails = array_values($email);
         
+        //Create dictionary for hash values and pseudonymisation
+        $get_pseudo = $DB->get_records('disea_pseudo');
+        $get_pseudo = array_values($get_pseudo);
+        $hash_dict = [];
+        foreach ($get_pseudo as $ps) {
+            $hash_dict[$ps->userid] = $ps->hash;
+        }
+        
+        
         foreach ($emails as $m) {
         
             //create where clause from users
@@ -72,6 +81,13 @@ class log_task extends \core\task\scheduled_task {
                 'origin','ip','realuserid'));
             if (count($data) > 0) {
                 foreach ($data as $row) {
+                    //Change user id with hash value
+                    if(array_key_exists($row->userid, $hash_dict)) {
+                        $row->userid = $hash_dict[$row->userid];
+                    }
+                    if(array_key_exists($row->relateduserid, $hash_dict) ) {
+                        $row->relateduserid = $hash_dict[$row->relateduserid];
+                    }
                     fputcsv($fh, json_decode(json_encode($row), true));
                 }
             }
