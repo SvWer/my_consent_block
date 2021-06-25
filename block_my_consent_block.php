@@ -30,6 +30,13 @@ class block_my_consent_block extends block_base {
     function has_config() {
         return true;
     }
+    
+    function applicable_formats() {
+        return array(
+            'site-index' => false,
+            'course-view' => true,
+        );
+    }
 
     function get_content() {
         global $DB, $USER, $PAGE, $OUTPUT;
