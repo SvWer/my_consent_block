@@ -99,7 +99,6 @@ class log_task extends \core\task\scheduled_task {
             // this has to be changed in the future, so that you are able to define the recipient in the settings of the plugin
             $user = $DB->get_record('user', array('id' => 1));
             
-            //$tomail = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'consent'));
             $userto = $DB->get_record('user', array('email' => $m->email));
             
             //create message
@@ -111,7 +110,7 @@ class log_task extends \core\task\scheduled_task {
             $message->subject = 'DiSEA Logdaten'.time();
             $message->fullmessage = 'Anbei erhalten Sie die Logdaten der Nutzer, die zugestimmt haben beim DiSEA-Projekt mitzuwirken.';
             $message->fullmessageformat = FORMAT_MARKDOWN;
-            $message->fullmessagehtml = '<p>message body</p>';
+            $message->fullmessagehtml = '<p>Anbei erhalten Sie die Logdaten der Nutzer, die zugestimmt haben beim DiSEA-Projekt mitzuwirken.</p>';
             $message->smallmessage = 'small message';
             $message->notification = 1;
             $message->contexturl = (new \moodle_url('/course/'))->out(false);

@@ -1,7 +1,7 @@
 <?php
     $capabilities = array(
  
-    'block/block_my_consent_block:addinstance' => array(
+    'block/my_consent_block:addinstance' => array(
         'riskbitmask' => RISK_SPAM | RISK_XSS,
  
         'captype' => 'write',
@@ -13,4 +13,6 @@
  
         'clonepermissionsfrom' => 'moodle/site:manageblocks'
     ),
+        
+        
 );
