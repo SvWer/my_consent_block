@@ -114,16 +114,13 @@ QATAPY8Aw9iXk98ZsP3PG5Dc2Jycusg8tYNZmbiDr5PrCCA0UtBylHFNEEgZoPX0
             'contextid' => $context->id,
             'component' => $component,
             'filearea' => $filearea,
-            'itemid' => $draftitemid,
+            'itemid' => $itemid,
             'filepath' => '/',
             'filename' => 'Log-'.$filename.'.txt',
             'source' => 'disea_consent'
         );
         
         $f = $fs->create_file_from_string($filerecord, $message);
-        //$f = $fs->create_file_from_pathname($filerecord, $path);
-        var_dump('f: ');
-        var_dump($f);
         //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
         
         $file = $fs->get_area_files($context->id, $component, $filearea, 0, $itemid, false);
@@ -148,7 +145,7 @@ QATAPY8Aw9iXk98ZsP3PG5Dc2Jycusg8tYNZmbiDr5PrCCA0UtBylHFNEEgZoPX0
         $uploadinfo->section = 1;
         $uploadinfo->module = $module->id;
         $uploadinfo->modulename= $module->name;
-        $uploadinfo->files=$draftitemid;
+        $uploadinfo->files=$itemid;
         $uploadinfo->displayname = 'Log-'.$filename.'.txt';
         
         $data3 = new \stdClass();
