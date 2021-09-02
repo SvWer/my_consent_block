@@ -1,3 +1,11 @@
+# To Do
+-> Datei irgendwie speichern können
+-> consent über config definieren
+-> public key ersetzen
+-> Kursid anpassen
+
+
+
 # my_consent_block
 
 In this Branch the plugin is able to:
