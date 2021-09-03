@@ -82,30 +82,12 @@ if($mform->is_cancelled()) {
     }
 }
 
+$text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'consent_text'));
 
 echo $OUTPUT->header();
 
 $templatecontext = (object)[
-    'consent_title' => get_string('consent_title', 'block_my_consent_block'),
-    'consent_greeting' => get_string('consent_greeting', 'block_my_consent_block'),
-    'consent_intro' => get_string('consent_intro', 'block_my_consent_block'),
-    'advantage_title' => get_string('advantage_title', 'block_my_consent_block'),
-    'advantage_one' => get_string('advantage_one', 'block_my_consent_block'),
-    'advantage_two' => get_string('advantage_two', 'block_my_consent_block'),
-    'data_collection_title' => get_string('data_collection_title', 'block_my_consent_block'),
-    'data_collection_one' => get_string('data_collection_one', 'block_my_consent_block'),
-    'data_collection_two' => get_string('data_collection_two', 'block_my_consent_block'),
-    'sozio_title' => get_string('sozio_title', 'block_my_consent_block'),
-    'sozio_one' => get_string('sozio_one', 'block_my_consent_block'),
-    'sozio_list_one' => get_string('sozio_list_one', 'block_my_consent_block'),
-    'sozio_list_two' => get_string('sozio_list_two', 'block_my_consent_block'),
-    'sozio_list_three' => get_string('sozio_list_three', 'block_my_consent_block'),
-    'anonymisation_title' => get_string('anonymisation_title', 'block_my_consent_block'),
-    'anonymisation_one' => get_string('anonymisation_one', 'block_my_consent_block'),
-    'anonymisation_two' => get_string('anonymisation_two', 'block_my_consent_block'),
-    'anonymisation_three' => get_string('anonymisation_three', 'block_my_consent_block'),
-    'anonymisation_four' => get_string('anonymisation_four', 'block_my_consent_block'),
-    
+    'consent' => $text->value,
 ];
 
 echo $OUTPUT->render_from_template('block_my_consent_block/consent', $templatecontext);

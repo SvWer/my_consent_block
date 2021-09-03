@@ -26,10 +26,14 @@ defined('MOODLE_INTERNAL') || die();
     
    
 if($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('block_my_consent_block/consent', 
-        get_string('config_title', 'block_my_consent_block'), 
-        get_string('config_text', 'block_my_consent_block'),
-	    'noreply@localhost.com', PARAM_EMAIL));
+    $settings->add(new admin_setting_configtext('block_my_consent_block/consent_text',
+        get_string('config_consent_text', 'block_my_consent_block'),
+        get_string('config_consent_description', 'block_my_consent_block'),
+        '', PARAM_RAW));
+        $settings->add(new admin_setting_configtext('block_my_consent_block/courseid',
+            get_string('config_title', 'block_my_consent_block'),
+            get_string('config_text', 'block_my_consent_block'),
+            '', PARAM_INT));
 }
 
 

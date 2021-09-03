@@ -89,7 +89,8 @@ QATAPY8Aw9iXk98ZsP3PG5Dc2Jycusg8tYNZmbiDr5PrCCA0UtBylHFNEEgZoPX0
         $message = bin2hex($output);
         
         //get course
-        $course = $DB->get_record('course', array('id'=> 9));
+        $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
+        $course = $DB->get_record('course', array('id'=> $text->value));
         $modulename = 'resource';
         
         require_once($CFG->dirroot . '/course/modlib.php');

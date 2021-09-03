@@ -71,11 +71,6 @@ class block_my_consent_block extends block_base {
             return $this->content;
         }
 
-        
-        
-        
-
-
         $this->content = new stdClass;
         $this->content->text = $content;
         return $this->content;
