@@ -1,8 +1,6 @@
 # To Do
- - Datei irgendwie speichern können
- - consent über config definieren
  - public key ersetzen
- - Kursid anpassen
+ - Ablehnen nach Zusage behandeln
 
 
 
