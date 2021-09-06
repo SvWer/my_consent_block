@@ -33,7 +33,7 @@ $string['config_text'] = 'Please insert the Course ID of the course in which the
 $string['config_consent_text'] =  'Your Consent';
 $string['config_consent_description'] = 'Please enter your consent in this field as html formatted text.';
 
-$string['agree'] = '<strong>Ich stimme</strong> der Erhebung, der Verarbeitung und Nutzung meiner Daten für die Begleitforschung im Rahmen der Lehrveranstaltung <strong>zu</strong>.';
+$string['agree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich zu</strong>.';
 $string['disagree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich nicht zu</strong>.';
 
 $string['database_insert'] = 'Successfully added to database';
