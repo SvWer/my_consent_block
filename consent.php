@@ -58,6 +58,10 @@ if($mform->is_cancelled()) {
     //If submitted
     $id = $_POST ['agreedis'];
     
+    if($id == null) {
+        redirect($url, get_string('no_choice', 'block_my_consent_block'), \core\output\notification::NOTIFY_ERROR);
+    }
+    
     $choice = 0;
     if($id === '1') {
         $choice = 1;

@@ -35,9 +35,9 @@ class log_task extends \core\task\scheduled_task {
         }
         //Create full query to get all the logdata
         $query = 'SELECT lsl.id, lsl.eventname, lsl.component, lsl.action, lsl.target, lsl.objecttable, '.
-                'lsl.objectid, lsl.crud, lsl.edulevel, lsl.contextid, lsl.contextlevel, lsl.contextinstanceid, '.
-                'lsl.userid, lsl.courseid, lsl.relateduserid, lsl.anonymous, lsl. other, lsl.timecreated, '.
-                'lsl.origin, lsl.ip, lsl.realuserid FROM mdl_logstore_standard_log lsl '. $where;
+                'lsl.objectid, lsl.contextid, lsl.contextlevel, lsl.contextinstanceid, '.
+                'lsl.userid, lsl.courseid, lsl.relateduserid, lsl. other, lsl.timecreated '.
+                ' FROM mdl_logstore_standard_log lsl '. $where;
         //get Logdata from database
         $log_data = $DB->get_records_sql($query);
         $data = array_values($log_data);
@@ -46,10 +46,9 @@ class log_task extends \core\task\scheduled_task {
         
         $fh = fopen('php://temp', 'rw');
         fputcsv($fh, array('id','eventname','component','action','target',
-            'obejttable','obejtid','crud','edulevel','contextid',
+            'obejttable','obejtid','contextid',
             'contextlevel','contextinstanceid','userid','courseid',
-            'relateduserid','anonymous','other','timecreated',
-            'origin','ip','realuserid'));
+            'relateduserid','other','timecreated'));
         if (count($data) > 0) {
             foreach ($data as $row) {
                 fputcsv($fh, json_decode(json_encode($row), true));

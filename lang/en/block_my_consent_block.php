@@ -35,6 +35,7 @@ $string['config_consent_description'] = 'Please enter your consent in this field
 
 $string['agree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich zu</strong>.';
 $string['disagree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich nicht zu</strong>.';
+$string['no_choice'] = 'Please choose one the the answers!';
 
 $string['database_insert'] = 'Successfully added to database';
 $string['database_update'] = 'Database successfully updated';
