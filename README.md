@@ -1,6 +1,5 @@
 # To Do
  - public key ersetzen
- - Ablehnen nach Zusage behandeln
 
 
 
