@@ -48,7 +48,7 @@ if($user) {
 //Check response from consent_form
 if($mform->is_cancelled()) {
     if(!$user) {
-        //If user wasn't in database and wants to cancell, stay on this page
+        //If user wasn't in database and wants to cancel, stay on this page
         redirect($url);
     } else {
         //If user is already in database and cancels, return to course

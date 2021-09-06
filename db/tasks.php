@@ -21,4 +21,14 @@ $tasks = array(
         'dayofweek' => '*',
         'disabled'  => 0,
     ),
+    array(
+        'classname' => 'block_my_consent_block\task\decline_task',
+        'blocking'  => 0,
+        'minute'    => '*',
+        'hour'      => '*',
+        'day'       => '*',
+        'month'     => '*',
+        'dayofweek' => '*',
+        'disabled'  => 0,
+    ),
 );

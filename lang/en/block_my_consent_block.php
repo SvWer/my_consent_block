@@ -30,7 +30,7 @@ $string['pluginname'] = 'DiSEA Consent block';
 $string['config_title'] = 'Course for Logdata';
 $string['config_text'] = 'Please insert the Course ID of the course in which the data should be stored.';
 
-$string['config_consent_title'] =  'Your Consent';
+$string['config_consent_text'] =  'Your Consent';
 $string['config_consent_description'] = 'Please enter your consent in this field as html formatted text.';
 
 $string['agree'] = '<strong>Ich stimme</strong> der Erhebung, der Verarbeitung und Nutzung meiner Daten für die Begleitforschung im Rahmen der Lehrveranstaltung <strong>zu</strong>.';
@@ -45,5 +45,6 @@ $string['choice_no'] = 'You declined the consent';
 $string['choice_yes'] = 'You accepted the consent';
 
 $string['log_task_name'] = 'Disea Log Task';
+$string['decline_task_name'] = 'Disea decline Task';
 
 $string['messageprovider'] = 'Disea Message Provider';
