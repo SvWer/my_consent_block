@@ -19,25 +19,21 @@ class log_task extends \core\task\scheduled_task {
     
     public function execute() {
         global $CFG, $DB;
-        //get all users, that accepted the consent
-        $consent_user = $DB->get_records('disea_consent', array('choice' => '1'));
-        $consent_users = array_values($consent_user);
-        //create where clause from users
-        $where = 'WHERE ';
-        $count = 0;
-        foreach ($consent_users as $users) {
-            if($count == 0) {
-                $where .= 'lsl.userid = '.$users->userid;
-                $count++;
-            } else {
-                $where .= ' OR lsl.userid = '.$users->userid;
-            }
-        }
-        //Create full query to get all the logdata
-        $query = 'SELECT lsl.id, lsl.eventname, lsl.component, lsl.action, lsl.target, lsl.objecttable, '.
-                'lsl.objectid, lsl.contextid, lsl.contextlevel, lsl.contextinstanceid, '.
-                'lsl.userid, lsl.courseid, lsl.relateduserid, lsl. other, lsl.timecreated '.
-                ' FROM mdl_logstore_standard_log lsl '. $where;
+        //SQL Query to get logdata
+        $query = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
+                'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
+                'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
+                'FROM mdl_logstore_standard_log l '.
+                'LEFT JOIN mdl_course c '.
+                'ON l.courseid = c.id '.
+                'LEFT JOIN mdl_disea_consent disea ON l.courseid = disea.courseid '. 
+                'WHERE l.userid = disea.userid '.
+                'AND (l.relateduserid IN (SELECT userid FROM mdl_disea_consent disea2 '.
+                    'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
+                    'OR l.relateduserid IS NULL) '.
+                    'AND disea.choice = 1 ';
+                
+                 
         //get Logdata from database
         $log_data = $DB->get_records_sql($query);
         $data = array_values($log_data);
@@ -47,7 +43,7 @@ class log_task extends \core\task\scheduled_task {
         $fh = fopen('php://temp', 'rw');
         fputcsv($fh, array('id','eventname','component','action','target',
             'obejttable','obejtid','contextid',
-            'contextlevel','contextinstanceid','userid','courseid',
+            'contextlevel','contextinstanceid','userid','courseid','coursename_short',
             'relateduserid','other','timecreated'));
         if (count($data) > 0) {
             foreach ($data as $row) {
