@@ -19,6 +19,11 @@ class log_task extends \core\task\scheduled_task {
     
     public function execute() {
         global $CFG, $DB;
+        //get Time of last run of Log Task
+        $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE component = "block_my_consent_block"';
+        $t = $DB->get_records_sql($sql_t);
+        $t = array_values($t);
+        
         //SQL Query to get logdata
         $query = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
                 'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
@@ -31,7 +36,7 @@ class log_task extends \core\task\scheduled_task {
                 'AND (l.relateduserid IN (SELECT userid FROM mdl_disea_consent disea2 '.
                     'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
                     'OR l.relateduserid IS NULL) '.
-                    'AND disea.choice = 1 ';
+                    'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart);
                 
                  
         //get Logdata from database
