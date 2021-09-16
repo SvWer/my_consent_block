@@ -30,6 +30,9 @@ $string['pluginname'] = 'DiSEA Consent block';
 $string['config_title'] = 'Course for Logdata';
 $string['config_text'] = 'Please insert the Course ID of the course in which the data should be stored.';
 
+$string['config_key_title'] = 'Public key for encrypting the log data';
+$string['config_key_text'] = 'Please insert the public key.';
+
 $string['config_consent_text'] =  'Your Consent';
 $string['config_consent_description'] = 'Please enter your consent in this field as html formatted text.';
 

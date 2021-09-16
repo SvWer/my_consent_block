@@ -26,14 +26,21 @@ defined('MOODLE_INTERNAL') || die();
     
    
 if($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('block_my_consent_block/consent_text',
+    //Consent
+    $settings->add(new admin_setting_configtextarea('block_my_consent_block/consent_text',
         get_string('config_consent_text', 'block_my_consent_block'),
         get_string('config_consent_description', 'block_my_consent_block'),
-        '', PARAM_RAW));
-        $settings->add(new admin_setting_configtext('block_my_consent_block/courseid',
-            get_string('config_title', 'block_my_consent_block'),
-            get_string('config_text', 'block_my_consent_block'),
-            '', PARAM_INT));
+        '', PARAM_RAW,80));
+    //Couseid
+    $settings->add(new admin_setting_configtext('block_my_consent_block/courseid',
+        get_string('config_title', 'block_my_consent_block'),
+        get_string('config_text', 'block_my_consent_block'),
+        '', PARAM_INT));
+    //public key
+    $settings->add(new admin_setting_configtextarea('block_my_consent_block/pub_key',
+        get_string('config_key_title', 'block_my_consent_block'),
+        get_string('config_key_text', 'block_my_consent_block'),
+        '', PARAM_RAW,80));
 }
 
 

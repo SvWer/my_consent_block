@@ -28,7 +28,10 @@ $string['block_my_consent_block'] = 'DiSEA Einwilligungsblock';
 $string['pluginname'] = 'DiSEA Einwilligungsblock';
 
 $string['config_title'] = 'Kurs f&uuml;r Logdaten';
-$string['config_text'] = 'Bitte geben Sie hier die Kurs ID für den Kurs in, in dem die Logdaten gespeichert werden sollen.';
+$string['config_text'] = 'Bitte geben Sie hier die Kurs ID f&uuml;r den Kurs in, in dem die Logdaten gespeichert werden sollen.';
+
+$string['config_key_title'] = '&Ouml;ffentlicher Schl&uuml;ssel zum Verschl&uuml;sseln der Daten';
+$string['config_key_text'] = 'Bitte f&uuml;gen Sie hier den &ouml;ffentlichen Schl&uuml;ssel ein.';
 
 $string['config_consent_text'] = 'Ihre Einwilligungserkl&auml;rung';
 $string['config_consent_description'] = 'Bitte geben Sie hier ihre Einwilligungserkl&auml;rung als HTML formatierten Text ein.';
