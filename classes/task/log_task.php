@@ -24,31 +24,45 @@ class log_task extends \core\task\scheduled_task {
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
-        //SQL Query to get logdata
-        $query = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
+        //SQL Query to get logdata in interval of one week
+        $query1 = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
                 'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
                 'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
                 'FROM mdl_logstore_standard_log l '.
                 'LEFT JOIN mdl_course c '.
                 'ON l.courseid = c.id '.
-                'LEFT JOIN mdl_disea_consent disea ON l.courseid = disea.courseid '. 
+                'LEFT JOIN (SELECT * FROM mdl_disea_consent d WHERE d.timemodified < '. intval($t[0]->timestart) .' ) disea '.
+                'ON l.courseid = disea.courseid '. 
                 'WHERE l.userid = disea.userid '.
                 'AND (l.relateduserid IN (SELECT userid FROM mdl_disea_consent disea2 '.
                     'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
                     'OR l.relateduserid IS NULL) '.
-                    'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart);
-                
+                    'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart) .
+         ' UNION SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
+            'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
+            'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
+            'FROM mdl_logstore_standard_log l '.
+            'LEFT JOIN mdl_course c '.
+            'ON l.courseid = c.id '.
+            'LEFT JOIN (SELECT * FROM mdl_disea_consent d WHERE d.timemodified > '. intval($t[0]->timestart) .' ) disea '.
+            'ON l.courseid = disea.courseid '.
+            'WHERE l.userid = disea.userid '.
+            'AND (l.relateduserid IN (SELECT userid FROM mdl_disea_consent disea2 '.
+            'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
+            'OR l.relateduserid IS NULL) '.
+            'AND disea.choice = 1 ';
                  
         //get Logdata from database
-        $log_data = $DB->get_records_sql($query);
-        $data = array_values($log_data);
+        $log_data1 = $DB->get_records_sql($query1);
+        $data = array_values($log_data1);
+        
         //Create CSV-String from logdata
         $filename = date("Y-m-d--H.i.s"); 
         
         $fh = fopen('php://temp', 'rw');
         fputcsv($fh, array('id','eventname','component','action','target',
             'obejttable','obejtid','contextid',
-            'contextlevel','contextinstanceid','userid','courseid','coursename_short',
+            'contextlevel','contextinstanceid','userid','firstname','lastname','courseid','coursename_short',
             'relateduserid','other','timecreated'));
         if (count($data) > 0) {
             foreach ($data as $row) {
