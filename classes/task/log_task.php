@@ -64,6 +64,7 @@ class log_task extends \core\task\scheduled_task {
             'obejttable','obejtid','contextid',
             'contextlevel','contextinstanceid','userid','firstname','lastname','courseid','coursename_short',
             'relateduserid','other','timecreated'));
+        mtrace('Rows collected from db ' . count($data) .'\n\n');
         if (count($data) > 0) {
             foreach ($data as $row) {
                 fputcsv($fh, json_decode(json_encode($row), true));
@@ -76,6 +77,8 @@ class log_task extends \core\task\scheduled_task {
 
         $public_key = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'pub_key'));
         $public_key = $public_key->value;
+        
+        mtrace('public key from config: ' . $public_key. '\n\n');
         
         
         //Encryption of the csv String, so only the user with the private key can read it
@@ -90,6 +93,8 @@ class log_task extends \core\task\scheduled_task {
             $output.=$encryptedMessage;
         }
         $message = bin2hex($output);
+        
+        mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
         
         //get course
         $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
@@ -120,6 +125,8 @@ class log_task extends \core\task\scheduled_task {
         $mform = null;
         include_modulelib('resource');
         $data3 = set_moduleinfo_defaults($data3);
+        mtrace("data3 set module info: ");
+        var_dump($data3);
         if (!empty($course->groupmodeforce) or !isset($data3->groupmode)) {
             $data3->groupmode = 0; // Do not set groupmode.
         }
@@ -235,9 +242,14 @@ class log_task extends \core\task\scheduled_task {
             
             $f = $fs->create_file_from_string($filerecord, $message);
             //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
+            mtrace("\n\n\$f after create file from string: ");
+            var_dump($f);
             
             $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
             $file = reset($file);
+            
+            mtrace("\n\nFile: ");
+            var_dump($file);
             
             if (!empty($introeditor)) {
                 // This will respect a module that has set a value for intro in it's modname_add_instance() function.

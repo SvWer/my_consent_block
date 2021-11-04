@@ -34,6 +34,8 @@ class decline_task extends \core\task\scheduled_task {
         
             //Create CSV-String from logdata
             
+            mtrace("Anzahl von Reihen aus Datenbank: ".count($consent_users). '\n\n');
+            
             $fh = fopen('php://temp', 'rw');
             fputcsv($fh, array('id','userid','courseid','choice','timecreated','timemodified'));
             if (count($consent_users) > 0) {
@@ -60,6 +62,8 @@ class decline_task extends \core\task\scheduled_task {
                 $output.=$encryptedMessage;
             }
             $message = bin2hex($output);
+            
+            mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
             
             //get course
             $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
@@ -206,9 +210,14 @@ class decline_task extends \core\task\scheduled_task {
                 
                 $f = $fs->create_file_from_string($filerecord, $message);
                 //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
+                mtrace("\n\n\$f after create file from string: ");
+                var_dump($f);
                 
                 $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
                 $file = reset($file);
+                
+                mtrace("\n\nFile: ");
+                var_dump($file);
                 
                 if (!empty($introeditor)) {
                     // This will respect a module that has set a value for intro in it's modname_add_instance() function.
@@ -240,7 +249,8 @@ class decline_task extends \core\task\scheduled_task {
                 $data3 = edit_module_post_actions($data3, $course);
                 $transaction->allow_commit();
         }
-
+//#####################################################################################################################################
+        //Export User Data with Consent Data
         //get all lines from disea_consent with name
         $sql_c = 'Select d.id, d.userid, d.choice, d.courseid, u.firstname, u.lastname from mdl_disea_consent d '.
                   'JOIN mdl_user u ON d.userid = u.id '.
@@ -248,7 +258,8 @@ class decline_task extends \core\task\scheduled_task {
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
 
-            
+            mtrace("\n\nConsent Ja mit Namen\n");
+            mtrace("Consent Data eintraege: ".count($consent_users).'\n\n');
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
             fputcsv($fh, array('id','userid','choice','courseid','firstname','lastname'));
@@ -276,6 +287,8 @@ class decline_task extends \core\task\scheduled_task {
                 $output.=$encryptedMessage;
             }
             $message = bin2hex($output);
+            
+            mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
             
             //get course
             $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
@@ -310,6 +323,8 @@ class decline_task extends \core\task\scheduled_task {
             if (!empty($course->groupmodeforce) or !isset($data3->groupmode)) {
                 $data3->groupmode = 0; // Do not set groupmode.
             }
+            mtrace("data3 set module info: ");
+            var_dump($data3);
             
             // First add course_module record because we need the context.
             $newcm = new \stdClass();
@@ -422,9 +437,14 @@ class decline_task extends \core\task\scheduled_task {
                 
                 $f = $fs->create_file_from_string($filerecord, $message);
                 //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
+                mtrace("\n\n\$f after create file from string: ");
+                var_dump($f);
                 
                 $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
                 $file = reset($file);
+                
+                mtrace("\n\nFile: ");
+                var_dump($file);
                 
                 if (!empty($introeditor)) {
                     // This will respect a module that has set a value for intro in it's modname_add_instance() function.
@@ -495,6 +515,9 @@ class decline_task extends \core\task\scheduled_task {
         }
         $message = bin2hex($output);
         
+        mtrace("\n\n Statistik: \n");
+        mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
+        
         //get course
         $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
         $course = $DB->get_record('course', array('id'=> $text->value));
@@ -528,6 +551,8 @@ class decline_task extends \core\task\scheduled_task {
         if (!empty($course->groupmodeforce) or !isset($data3->groupmode)) {
             $data3->groupmode = 0; // Do not set groupmode.
         }
+        mtrace("data3 set module info: ");
+        var_dump($data3);
         
         // First add course_module record because we need the context.
         $newcm = new \stdClass();
@@ -640,9 +665,14 @@ class decline_task extends \core\task\scheduled_task {
             
             $f = $fs->create_file_from_string($filerecord, $message);
             //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
+            mtrace("\n\n\$f after create file from string: ");
+            var_dump($f);
             
             $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
             $file = reset($file);
+            
+            mtrace("\n\nFile: ");
+            var_dump($file);
             
             if (!empty($introeditor)) {
                 // This will respect a module that has set a value for intro in it's modname_add_instance() function.
