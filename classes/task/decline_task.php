@@ -20,21 +20,24 @@ class decline_task extends \core\task\scheduled_task {
     public function execute() {
         global $CFG, $DB;
         //get Time of last run of Log Task
-        $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE component = "block_my_consent_block"';
+        $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE classname = "block_my_consent_block\\\\task\\\\decline_task"';
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
+        mtrace("Last time log task: ".intval($t[0]->timestart));
         
         //get all users, that accepted the consent
         $sql_c = 'Select * FROM mdl_disea_consent WHERE choice = 0 AND timemodified >'.intval($t[0]->timestart);
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
         
+        mtrace("Anzahl von Reihen aus Datenbank: ".count($consent_users). '\n\n');
+        
         if($consent_user) {
         
             //Create CSV-String from logdata
             
-            mtrace("Anzahl von Reihen aus Datenbank: ".count($consent_users). '\n\n');
+            
             
             $fh = fopen('php://temp', 'rw');
             fputcsv($fh, array('id','userid','courseid','choice','timecreated','timemodified'));
@@ -486,6 +489,7 @@ class decline_task extends \core\task\scheduled_task {
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
         
+        mtrace("Anzahl Statistik Zeilen: ".count($consent_users));
         
         //Create CSV-String from logdata
         $fh = fopen('php://temp', 'rw');
