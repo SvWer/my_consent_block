@@ -1,14 +1,12 @@
-# To Do
- - public key ersetzen
-
-
 
 # my_consent_block
 
 In this Branch the plugin is able to:
 
  - Teachers/Admin can add plugin to courses
- - Admin has to insert Mail address to which logdata for the course is send to in Pluginsetting
  - Students have to accept/decline consent in every course
- - Logdata is send in one file to the given Mail address
+ - Logdate is encrypted via public key
+ - encrypted data is saved to special course
+ - special course id, public key and consent is set in config
+
 
