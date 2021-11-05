@@ -60,7 +60,9 @@ class log_task extends \core\task\scheduled_task {
         
         mtrace('Rows collected from db ' . count($data) .'\n\n');
         mtrace('First Row: ');
-        var_dump($data);
+        if(count($data)>0) {
+            var_dump($data[0]);
+        }
         //Create CSV-String from logdata
         $filename = date("Y-m-d--H.i.s"); 
         

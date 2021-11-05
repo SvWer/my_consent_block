@@ -31,7 +31,7 @@ class decline_task extends \core\task\scheduled_task {
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
         
-        mtrace("Anzahl von Reihen aus Datenbank: ".count($consent_users). '\n\n');
+        mtrace("Anzahl von Reihen aus Datenbank (abgelehte Nutzer): ".count($consent_users). '\n\n');
         
         if($consent_user) {
         
@@ -66,7 +66,7 @@ class decline_task extends \core\task\scheduled_task {
             }
             $message = bin2hex($output);
             
-            mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
+            mtrace('First 501 hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
             
             //get course
             $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
@@ -261,8 +261,9 @@ class decline_task extends \core\task\scheduled_task {
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
 
+            mtrace("Der folgende Teil sollte jedesmal ausgefuehrt werden\n");
             mtrace("\n\nConsent Ja mit Namen\n");
-            mtrace("Consent Data eintraege: ".count($consent_users).'\n\n');
+            mtrace("Anzahl Consent Data: ".count($consent_users).'\n\n');
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
             fputcsv($fh, array('id','userid','choice','courseid','firstname','lastname'));
@@ -468,6 +469,8 @@ class decline_task extends \core\task\scheduled_task {
                 // So we have to update one of them twice.
                 $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
                 
+                mtrace("Sectionid: ".$sectionid);
+                
                 // Trigger event based on the action we did.
                 // Api create_from_cm expects modname and id property, and we don't want to modify $moduleinfo since we are returning it.
                 $eventdata = clone $data3;
@@ -475,6 +478,9 @@ class decline_task extends \core\task\scheduled_task {
                 $eventdata->id = $eventdata->coursemodule;
                 $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
                 $event->trigger();
+                
+                mtrace("Event Data: ");
+                var_dump($eventdata);
                 
                 $data3 = edit_module_post_actions($data3, $course);
                 $transaction->allow_commit();
@@ -488,7 +494,7 @@ class decline_task extends \core\task\scheduled_task {
             'Group by d.courseid';
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
-        
+        mtrace("\n\n Statistik: \n");
         mtrace("Anzahl Statistik Zeilen: ".count($consent_users));
         
         //Create CSV-String from logdata
@@ -519,7 +525,7 @@ class decline_task extends \core\task\scheduled_task {
         }
         $message = bin2hex($output);
         
-        mtrace("\n\n Statistik: \n");
+        
         mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
         
         //get course
@@ -697,6 +703,8 @@ class decline_task extends \core\task\scheduled_task {
             // So we have to update one of them twice.
             $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
             
+            mtrace("Sectionid: ".$sectionid);
+            
             // Trigger event based on the action we did.
             // Api create_from_cm expects modname and id property, and we don't want to modify $moduleinfo since we are returning it.
             $eventdata = clone $data3;
@@ -704,6 +712,9 @@ class decline_task extends \core\task\scheduled_task {
             $eventdata->id = $eventdata->coursemodule;
             $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
             $event->trigger();
+            
+            mtrace("Event Data: ");
+            var_dump($eventdata);
             
             $data3 = edit_module_post_actions($data3, $course);
             $transaction->allow_commit();
