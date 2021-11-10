@@ -305,6 +305,29 @@ class log_task extends \core\task\scheduled_task {
             mtrace("data3 edit_module_post_actions: ");
             var_dump($data3);
             $transaction->allow_commit();
+            
+            mtrace("Additional Data, checkt from DB:\n");
+            $consent = $DB->get_records('disea_consent');
+            var_dump($consent);
+            
+            mtrace("LogData about LogData Course: \n");
+            $log = $DB->get_records('logstore_standard_log', array('courseid'=>$course->id));
+            var_dump($log);
+            
+            mtrace("Course modules DB");
+            $cm = $DB->get_records('course_modules', array('course'=>$course->id));
+            var_dump($cm);
+            
+            mtrace("Course sections DB:");
+            $cs = $DB->get_records('course_sections', array('course'=>$course->id));
+            var_dump($cs);
+            
+            mtrace("Files DB:");
+            $sql_f = 'SELECT * FROM mdl_files WHERE source = "disea_consent"';
+            $files = $DB->get_records_sql($sql_f);
+            $files = array_values($files);
+            var_dump($files);
+            
     }
     
 }
