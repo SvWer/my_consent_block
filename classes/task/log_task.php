@@ -295,6 +295,12 @@ class log_task extends \core\task\scheduled_task {
             
             mtrace("After if for moduleTags");
             
+            //Test, if rebuilding Course helps
+            //If  cm is visible
+            $visible = get_fast_modinfo($course)->get_section_info($data3->section)->visible;
+            mtrace("Visibility: ".$visible);
+            rebuild_course_cache($course->id, true);
+            
             // Course_modules and course_sections each contain a reference to each other.
             // So we have to update one of them twice.
             $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
@@ -327,15 +333,15 @@ class log_task extends \core\task\scheduled_task {
             mtrace("LogData about LogData Course: \n");
             $log = $DB->get_records('logstore_standard_log', array('courseid'=>$course->id));
             var_dump($log);
-            
+                        
             mtrace("Course modules DB");
             $cm = $DB->get_records('course_modules', array('course'=>$course->id));
             var_dump($cm);
-            
+                       
             mtrace("Course sections DB:");
             $cs = $DB->get_records('course_sections', array('course'=>$course->id));
             var_dump($cs);
-            
+                        
             mtrace("Files DB:");
             $sql_f = 'SELECT * FROM mdl_files WHERE source = "disea_consent"';
             $files = $DB->get_records_sql($sql_f);
