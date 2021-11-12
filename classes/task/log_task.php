@@ -268,20 +268,32 @@ class log_task extends \core\task\scheduled_task {
             mtrace("\n\nFile: ");
             var_dump($file);
             
+            mtrace("introeditor: ".$introeditor);
+            
             if (!empty($introeditor)) {
+                mtrace("Introeditor not Empty, also im If");
                 // This will respect a module that has set a value for intro in it's modname_add_instance() function.
                 $introeditor['text'] = $data3->intro;
-                
+                mtrace("Introeditor[test] gesetzt");
                 $data3->intro = file_save_draft_area_files($introeditor['itemid'], $modcontext->id,
                     'mod_'.$data3->modulename, 'intro', 0,
                     array('subdirs'=>true), $introeditor['text']);
+                mtrace("data3-info wurde gesetzt mit file_save_draft_area_files");
                 $DB->set_field($data3->modulename, 'intro', $data3->intro, array('id'=>$data3->instance));
+                mtrace("DB  Set field erfolgreich");
             }
+            
+            mtrace("Nach IF:");
+            mtrace("Check if moduleTags");
             
             // Add module tags.
             if (\core_tag_tag::is_enabled('core', 'course_modules') && isset($data3->tags)) {
+                mtrace("In If for moduleTags");
                 \core_tag_tag::set_item_tags('core', 'course_modules', $data3->coursemodule, $modcontext, $data3->tags);
+                mtrace("moduleTags set erfolgreich");
             }
+            
+            mtrace("After if for moduleTags");
             
             // Course_modules and course_sections each contain a reference to each other.
             // So we have to update one of them twice.
@@ -305,6 +317,8 @@ class log_task extends \core\task\scheduled_task {
             mtrace("data3 edit_module_post_actions: ");
             var_dump($data3);
             $transaction->allow_commit();
+            
+            
             
             mtrace("Additional Data, checkt from DB:\n");
             $consent = $DB->get_records('disea_consent');
