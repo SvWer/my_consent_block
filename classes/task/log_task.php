@@ -257,52 +257,41 @@ class log_task extends \core\task\scheduled_task {
                 'source' => 'disea_consent'
             );
             
-            $f = $fs->create_file_from_string($filerecord, $message);
+            $fs->create_file_from_string($filerecord, $message);
             //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
-            mtrace("\n\n\$f after create file from string: ");
-            var_dump($f);
             
             $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
             $file = reset($file);
             
-            mtrace("\n\nFile: ");
-            var_dump($file);
-            
-            mtrace("introeditor: ".$introeditor);
-            
-            if (!empty($introeditor)) {
-                mtrace("Introeditor not Empty, also im If");
-                // This will respect a module that has set a value for intro in it's modname_add_instance() function.
-                $introeditor['text'] = $data3->intro;
-                mtrace("Introeditor[test] gesetzt");
-                $data3->intro = file_save_draft_area_files($introeditor['itemid'], $modcontext->id,
-                    'mod_'.$data3->modulename, 'intro', 0,
-                    array('subdirs'=>true), $introeditor['text']);
-                mtrace("data3-info wurde gesetzt mit file_save_draft_area_files");
-                $DB->set_field($data3->modulename, 'intro', $data3->intro, array('id'=>$data3->instance));
-                mtrace("DB  Set field erfolgreich");
+            var_dump($CFG->dataroot);
+            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot)), -4));
+            if (is_writable($CFG->dataroot)) {
+                var_dump( 'Die Datei kann geschrieben werden');
+            } else {
+                var_dump( 'Die Datei kann nicht geschrieben werden');
+            }
+            var_dump($CFG->dataroot.'/filedir');
+            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/filedir')), -4));
+            if (is_writable($CFG->dataroot.'/filedir')) {
+                var_dump('Die Datei kann geschrieben werden');
+            } else {
+                var_dump( 'Die Datei kann nicht geschrieben werden');
+            }
+            var_dump($CFG->dataroot.'/trashdir');
+            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/trashdir')), -4));
+            if (is_writable($CFG->dataroot.'/trashdir')) {
+                var_dump('Die Datei kann geschrieben werden');
+            } else {
+                var_dump( 'Die Datei kann nicht geschrieben werden');
+            }
+            var_dump($CFG->dataroot.'/temp/filestorage');
+            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/temp/filestorage')), -4));
+            if (is_writable($CFG->dataroot.'/temp/filestorage')) {
+                var_dump('Die Datei kann geschrieben werden');
+            } else {
+                var_dump( 'Die Datei kann nicht geschrieben werden');
             }
             
-            mtrace("Nach IF:");
-            mtrace("Check if moduleTags");
-            
-            // Add module tags.
-            if (\core_tag_tag::is_enabled('core', 'course_modules') && isset($data3->tags)) {
-                mtrace("In If for moduleTags");
-                \core_tag_tag::set_item_tags('core', 'course_modules', $data3->coursemodule, $modcontext, $data3->tags);
-                mtrace("moduleTags set erfolgreich");
-            }
-            
-            mtrace("After if for moduleTags");
-            
-            //Test, if rebuilding Course helps
-            //If  cm is visible
-            $visible = get_fast_modinfo($course)->get_section_info($data3->section)->visible;
-            mtrace("Visibility: ".$visible);
-            rebuild_course_cache($course->id, true);
-            
-            // Course_modules and course_sections each contain a reference to each other.
-            // So we have to update one of them twice.
             $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
             
             mtrace("Sectionid: ".$sectionid);
@@ -315,39 +304,8 @@ class log_task extends \core\task\scheduled_task {
             $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
             $event->trigger();
             
-            mtrace("Eventdata: ");
-            var_dump($eventdata);
-            
             $data3 = edit_module_post_actions($data3, $course);
-            
-            mtrace("data3 edit_module_post_actions: ");
-            var_dump($data3);
             $transaction->allow_commit();
-            
-            
-            
-            mtrace("Additional Data, checkt from DB:\n");
-            $consent = $DB->get_records('disea_consent');
-            var_dump($consent);
-            
-            mtrace("LogData about LogData Course: \n");
-            $log = $DB->get_records('logstore_standard_log', array('courseid'=>$course->id));
-            var_dump($log);
-                        
-            mtrace("Course modules DB");
-            $cm = $DB->get_records('course_modules', array('course'=>$course->id));
-            var_dump($cm);
-                       
-            mtrace("Course sections DB:");
-            $cs = $DB->get_records('course_sections', array('course'=>$course->id));
-            var_dump($cs);
-                        
-            mtrace("Files DB:");
-            $sql_f = 'SELECT * FROM mdl_files WHERE source = "disea_consent"';
-            $files = $DB->get_records_sql($sql_f);
-            $files = array_values($files);
-            var_dump($files);
-            
     }
     
 }
