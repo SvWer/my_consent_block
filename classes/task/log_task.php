@@ -306,6 +306,16 @@ class log_task extends \core\task\scheduled_task {
             
             $data3 = edit_module_post_actions($data3, $course);
             $transaction->allow_commit();
+            
+            $sql_c = 'Select d.courseid, COUNT(case when d.choice = 1 then 1 else null end) as yes, '.
+                'COUNT(case when d.choice = 0 then 1 else null end) as no '.
+                'from mdl_disea_consent d '.
+                'Group by d.courseid';
+            $consent_user = $DB->get_records_sql($sql_c);
+            $consent_users = array_values($consent_user);
+            mtrace("Print some statistics");
+            mtrace("Anzahl Kurse mit aktiviertem Consent: ".count($consent_users));
+            var_dump($consent_users);
     }
     
 }
