@@ -119,7 +119,7 @@ class log_task extends \core\task\scheduled_task {
         $data3->course = $course->id;
         $data3->name = 'Log-'.$filename.'.txt';
         $data3->intro = '';
-        $data3->introformat = FORMAT_HTML;
+        $data3->introformat = 0;
         $data3->section = 1;
         $data3->module = 18;
         $data3->modulename =$modulename;
@@ -154,123 +154,130 @@ class log_task extends \core\task\scheduled_task {
         mtrace("\n\n data3 add_course_module: ");
         var_dump($data3);
         
+        //Add course module
         if (!$data3->coursemodule = add_course_module($data3)) {
             print_error('cannotaddcoursemodule');
         }
+
+        $addinstancefunction    = $data3->modulename."_add_instance";
+        try {
+            $returnfromfunc = $addinstancefunction($data3, $mform);
+        } catch (\moodle_exception $e) {
+            $returnfromfunc = $e;
+        }
+        if (!$returnfromfunc or !is_number($returnfromfunc)) {
+            // Undo everything we can. This is not necessary for databases which
+            // support transactions, but improves consistency for other databases.
+            \context_helper::delete_instance(CONTEXT_MODULE, $data3->coursemodule);
+            $DB->delete_records('course_modules', array('id'=>$data3->coursemodule));
+            
+            if ($returnfromfunc instanceof \moodle_exception) {
+                throw $returnfromfunc;
+            } else if (!is_number($returnfromfunc)) {
+                print_error('invalidfunction', '', course_get_url($course, $data3->section));
+            } else {
+                print_error('cannotaddnewmodule', '', course_get_url($course, $data3->section), $data3->modulename);
+            }
+        }
         
-        if (plugin_supports('mod', $data3->modulename, FEATURE_MOD_INTRO, true) &&
-            isset($data3->introeditor)) {
-                $introeditor = $data3->introeditor;
-                unset($data3->introeditor);
-                $data3->intro       = $introeditor['text'];
-                $data3->introformat = $introeditor['format'];
-            }
-            
-            $addinstancefunction    = $data3->modulename."_add_instance";
-            try {
-                $returnfromfunc = $addinstancefunction($data3, $mform);
-            } catch (\moodle_exception $e) {
-                $returnfromfunc = $e;
-            }
-            if (!$returnfromfunc or !is_number($returnfromfunc)) {
-                // Undo everything we can. This is not necessary for databases which
-                // support transactions, but improves consistency for other databases.
-                \context_helper::delete_instance(CONTEXT_MODULE, $data3->coursemodule);
-                $DB->delete_records('course_modules', array('id'=>$data3->coursemodule));
-                
-                if ($returnfromfunc instanceof \moodle_exception) {
-                    throw $returnfromfunc;
-                } else if (!is_number($returnfromfunc)) {
-                    print_error('invalidfunction', '', course_get_url($course, $data3->section));
-                } else {
-                    print_error('cannotaddnewmodule', '', course_get_url($course, $data3->section), $data3->modulename);
-                }
-            }
-            
-            $data3->instance = $returnfromfunc;
-            
-            $DB->set_field('course_modules', 'instance', $returnfromfunc, array('id'=>$data3->coursemodule));
-            
-            // Update embedded links and save files.
-            $modcontext = \context_module::instance($data3->coursemodule);
-            
-            $draftitemid = file_get_submitted_draft_itemid($filearea);
-            file_prepare_draft_area($draftitemid, $modcontext->id, $component, $filearea, $itemid);
-            $fs = get_file_storage();
-            
-            mtrace("Draftitemid: ".$draftitemid.'\n\n');
-            mtrace("fileStorage: ");
-            var_dump($fs);
-            
-            $filerecord = array(
-                'contextid' => $modcontext->id,
-                'component' => $component,
-                'filearea' => $filearea,
-                'itemid' => $itemid,
-                'filepath' => '/',
-                'filename' => 'Log-'.$filename.'.txt',
-                'source' => 'disea_consent'
-            );
-            
-            $fs->create_file_from_string($filerecord, $message);
-            //file_save_draft_area_files($draftitemid, $context->id, $component, $filearea, $itemid);
-            
-            $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
-            $file = reset($file);
-            
-            var_dump($CFG->dataroot);
-            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot)), -4));
-            if (is_writable($CFG->dataroot)) {
-                var_dump( 'Die Datei kann geschrieben werden');
-            } else {
-                var_dump( 'Die Datei kann nicht geschrieben werden');
-            }
-            var_dump($CFG->dataroot.'/filedir');
-            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/filedir')), -4));
-            if (is_writable($CFG->dataroot.'/filedir')) {
-                var_dump('Die Datei kann geschrieben werden');
-            } else {
-                var_dump( 'Die Datei kann nicht geschrieben werden');
-            }
-            var_dump($CFG->dataroot.'/trashdir');
-            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/trashdir')), -4));
-            if (is_writable($CFG->dataroot.'/trashdir')) {
-                var_dump('Die Datei kann geschrieben werden');
-            } else {
-                var_dump( 'Die Datei kann nicht geschrieben werden');
-            }
-            var_dump($CFG->dataroot.'/temp/filestorage');
-            var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/temp/filestorage')), -4));
-            if (is_writable($CFG->dataroot.'/temp/filestorage')) {
-                var_dump('Die Datei kann geschrieben werden');
-            } else {
-                var_dump( 'Die Datei kann nicht geschrieben werden');
-            }
-            
-            $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
-            
-            mtrace("Sectionid: ".$sectionid);
-            
-            // Trigger event based on the action we did.
-            // Api create_from_cm expects modname and id property, and we don't want to modify $moduleinfo since we are returning it.
-            $eventdata = clone $data3;
-            $eventdata->modname = $eventdata->modulename;
-            $eventdata->id = $eventdata->coursemodule;
-            $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
-            $event->trigger();
-            
-            $data3 = edit_module_post_actions($data3, $course);
-            $transaction->allow_commit();
-            
-            $sql_c = 'Select d.courseid, COUNT(case when d.choice = 1 then 1 else null end) as yes, '.
-                'COUNT(case when d.choice = 0 then 1 else null end) as no '.
-                'from mdl_disea_consent d '.
-                'Group by d.courseid';
-            $consent_user = $DB->get_records_sql($sql_c);
-            $consent_users = array_values($consent_user);
-            mtrace("Print some statistics");
-            mtrace("Anzahl Kurse mit aktiviertem Consent: ".count($consent_users));
-            var_dump($consent_users);
+        $data3->instance = $returnfromfunc;
+        
+        $DB->set_field('course_modules', 'instance', $returnfromfunc, array('id'=>$data3->coursemodule));
+        
+        // Update embedded links and save files.
+        $modcontext = \context_module::instance($data3->coursemodule);
+        mtrace("modContext: \n\n");
+        var_dump($modcontext);
+        
+        $draftitemid = file_get_submitted_draft_itemid($filearea);
+        mtrace("Draftitemid (file_get_submitted_draft_itemid: ".$draftitemid.'\n\n');
+        file_prepare_draft_area($draftitemid, $modcontext->id, $component, $filearea, $itemid);
+        $fs = get_file_storage();
+        
+        mtrace("Draftitemid: ".$draftitemid.'\n\n');
+        mtrace("fileStorage: ");
+        var_dump($fs);
+        
+        $filerecord = array(
+            'contextid' => $modcontext->id,
+            'component' => $component,
+            'filearea' => $filearea,
+            'itemid' => $itemid,
+            'filepath' => '/',
+            'filename' => 'Log-'.$filename.'.txt',
+            'source' => 'disea_consent'
+        );
+        
+        $fs->create_file_from_string($filerecord, $message);
+        //file_save_draft_area_files($draftitemid, $modcontext->id, $component, $filearea, $itemid);
+        
+        $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
+        $file = reset($file);
+        
+        //Check if folders are writeable
+        var_dump($CFG->dataroot);
+        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot)), -4));
+        if (is_writable($CFG->dataroot)) {
+            var_dump( 'Die Datei kann geschrieben werden');
+        } else {
+            var_dump( 'Die Datei kann nicht geschrieben werden');
+        }
+        var_dump($CFG->dataroot.'/filedir');
+        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/filedir')), -4));
+        if (is_writable($CFG->dataroot.'/filedir')) {
+            var_dump('Die Datei kann geschrieben werden');
+        } else {
+            var_dump( 'Die Datei kann nicht geschrieben werden');
+        }
+        var_dump($CFG->dataroot.'/trashdir');
+        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/trashdir')), -4));
+        if (is_writable($CFG->dataroot.'/trashdir')) {
+            var_dump('Die Datei kann geschrieben werden');
+        } else {
+            var_dump( 'Die Datei kann nicht geschrieben werden');
+        }
+        var_dump($CFG->dataroot.'/temp/filestorage');
+        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/temp/filestorage')), -4));
+        if (is_writable($CFG->dataroot.'/temp/filestorage')) {
+            var_dump('Die Datei kann geschrieben werden');
+        } else {
+            var_dump( 'Die Datei kann nicht geschrieben werden');
+        }
+        
+        $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
+        mtrace("Sectionid: ".$sectionid);
+        
+        // Trigger event based on the action we did.
+        // Api create_from_cm expects modname and id property, and we don't want to modify $moduleinfo since we are returning it.
+        $eventdata = clone $data3;
+        $eventdata->modname = $eventdata->modulename;
+        $eventdata->id = $eventdata->coursemodule;
+        $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
+        $event->trigger();
+        
+        $data3 = edit_module_post_actions($data3, $course);
+        $transaction->allow_commit();
+        
+        //Just for testing
+        /*
+        $sql_c = 'Select d.courseid, COUNT(case when d.choice = 1 then 1 else null end) as yes, '.
+            'COUNT(case when d.choice = 0 then 1 else null end) as no '.
+            'from mdl_disea_consent d '.
+            'Group by d.courseid';
+        $consent_user = $DB->get_records_sql($sql_c);
+        $consent_users = array_values($consent_user);
+        mtrace("Print some statistics");
+        mtrace("Anzahl Kurse mit aktiviertem Consent: ".count($consent_users));
+        var_dump($consent_users);
+        */
+        //29414
+        mtrace("Check for resources");
+        $res = $DB->get_records('resource', array('course'=>$course->id));
+        var_dump($res);
+        
+        mtrace("Check for course_modules");
+        $res2 = $DB->get_records('course_modules', array('course'=>$course->id));
+        var_dump($res2);
     }
     
 }
