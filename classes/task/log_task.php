@@ -121,85 +121,40 @@ class log_task extends \core\task\scheduled_task {
         $data3->intro = '';
         $data3->introformat = FORMAT_HTML;
         $data3->section = 1;
-        $data3->module =18;
+        $data3->module = 18;
         $data3->modulename =$modulename;
         $data3->add ='resource';
         $data3->return = 0;
         $data3->sr = 0;
         $data3->files = $itemid;
-        $data3->visible=1;
+        $data3->visible= 1;
         $data3->display = 4;
+        //Values from set_moduleinfo_defaults
+        $data3->instance = '';
+        $data3->coursemodule = '';
+        $data3->groupingid = 0;
+        $data3->completion = COMPLETION_DISABLED;
+        $data3->completionview = COMPLETION_VIEW_NOT_REQUIRED;
+        $data3->completionexpected = 0;
+        $data3->completiongradeitemnumber = null;
+        $data3->conditiongradegroup = array();
+        $data3->conditionfieldgroup = array();
+        $data3->visibleoncoursepage = 1;
+        //Other values set here before
+        $data3->groupmode = 0;
+        $data3->visibleold = 1;
+        $data3->showdescription = 0;
         
         $mform = null;
         include_modulelib('resource');
-        $data3 = set_moduleinfo_defaults($data3);
-        
-        mtrace("data3 set module info: ");
-        var_dump($data3);
-        
-        if (!empty($course->groupmodeforce) or !isset($data3->groupmode)) {
-            $data3->groupmode = 0; // Do not set groupmode.
-        }
-        
-        // First add course_module record because we need the context.
-        $newcm = new \stdClass();
-        $newcm->course           = $course->id;
-        $newcm->module           = $data3->module;
-        $newcm->instance         = 0; // Not known yet, will be updated later (this is similar to restore code).
-        $newcm->visible          = $data3->visible;
-        $newcm->visibleold       = $data3->visible;
-        $newcm->visibleoncoursepage = $data3->visibleoncoursepage;
-        if (isset($data3->cmidnumber)) {
-            $newcm->idnumber         = $data3->cmidnumber;
-        }
-        $newcm->groupmode        = $data3->groupmode;
-        $newcm->groupingid       = $data3->groupingid;
-        $completion = new \completion_info($course);
-        if ($completion->is_enabled()) {
-            $newcm->completion                = $data3->completion;
-            if ($data3->completiongradeitemnumber === '') {
-                $newcm->completiongradeitemnumber = null;
-            } else {
-                $newcm->completiongradeitemnumber = $data3->completiongradeitemnumber;
-            }
-            $newcm->completionview            = $data3->completionview;
-            $newcm->completionexpected        = $data3->completionexpected;
-        }
-        if(!empty($CFG->enableavailability)) {
-            // This code is used both when submitting the form, which uses a long
-            // name to avoid clashes, and by unit test code which uses the real
-            // name in the table.
-            $newcm->availability = null;
-            if (property_exists($data3, 'availabilityconditionsjson')) {
-                if ($data3->availabilityconditionsjson !== '') {
-                    $newcm->availability = $data3->availabilityconditionsjson;
-                }
-            } else if (property_exists($data3, 'availability')) {
-                $newcm->availability = $data3->availability;
-            }
-            // If there is any availability data, verify it.
-            if ($newcm->availability) {
-                $tree = new \core_availability\tree(json_decode($newcm->availability));
-                // Save time and database space by setting null if the only data
-                // is an empty tree.
-                if ($tree->is_empty()) {
-                    $newcm->availability = null;
-                }
-            }
-        }
-        if (isset($data3->showdescription)) {
-            $newcm->showdescription = $data3->showdescription;
-        } else {
-            $newcm->showdescription = 0;
-        }
         
         // From this point we make database changes, so start transaction.
         $transaction = $DB->start_delegated_transaction();
         
-        mtrace("\n\n newcm add_course_module: ");
-        var_dump($newcm);
+        mtrace("\n\n data3 add_course_module: ");
+        var_dump($data3);
         
-        if (!$data3->coursemodule = add_course_module($newcm)) {
+        if (!$data3->coursemodule = add_course_module($data3)) {
             print_error('cannotaddcoursemodule');
         }
         
