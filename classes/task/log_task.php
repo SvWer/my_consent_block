@@ -18,29 +18,27 @@ class log_task extends \core\task\scheduled_task {
     }
     
     public function execute() {
-        global $CFG, $DB;
+        global $CFG, $DB, $OUTPUT;
         //get Time of last run of Log Task
         $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE classname = "block_my_consent_block\\\\task\\\\log_task"';
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
-        mtrace("Last time log task: ".intval($t[0]->timestart));
-        
         //SQL Query to get logdata in interval of one week
         $query1 = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
-                'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
-                'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
-                'FROM mdl_logstore_standard_log l '.
-                'LEFT JOIN mdl_course c '.
-                'ON l.courseid = c.id '.
-                'LEFT JOIN (SELECT * FROM mdl_disea_consent d WHERE d.timemodified < '. intval($t[0]->timestart) .' ) disea '.
-                'ON l.courseid = disea.courseid '. 
-                'WHERE l.userid = disea.userid '.
-                'AND (l.relateduserid IN (SELECT userid FROM mdl_disea_consent disea2 '.
-                    'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
-                    'OR l.relateduserid IS NULL) '.
-                    'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart) .
-         ' UNION SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
+            'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
+            'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
+            'FROM mdl_logstore_standard_log l '.
+            'LEFT JOIN mdl_course c '.
+            'ON l.courseid = c.id '.
+            'LEFT JOIN (SELECT * FROM mdl_disea_consent d WHERE d.timemodified < '. intval($t[0]->timestart) .' ) disea '.
+            'ON l.courseid = disea.courseid '.
+            'WHERE l.userid = disea.userid '.
+            'AND (l.relateduserid IN (SELECT userid FROM mdl_disea_consent disea2 '.
+            'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
+            'OR l.relateduserid IS NULL) '.
+            'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart) .
+            ' UNION SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
             'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
             'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
             'FROM mdl_logstore_standard_log l '.
@@ -53,18 +51,13 @@ class log_task extends \core\task\scheduled_task {
             'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
             'OR l.relateduserid IS NULL) '.
             'AND disea.choice = 1 ';
-                 
+        
         //get Logdata from database
         $log_data1 = $DB->get_records_sql($query1);
         $data = array_values($log_data1);
         
-        mtrace('Rows collected from db ' . count($data) .'\n\n');
-        mtrace('First Row: ');
-        if(count($data)>0) {
-            var_dump($data[0]);
-        }
         //Create CSV-String from logdata
-        $filename = date("Y-m-d--H.i.s"); 
+        $filename = date("Y-m-d--H.i.s");
         
         $fh = fopen('php://temp', 'rw');
         fputcsv($fh, array('id','eventname','component','action','target',
@@ -79,13 +72,9 @@ class log_task extends \core\task\scheduled_task {
         rewind($fh);
         $csv = stream_get_contents($fh);
         fclose($fh);
-
-
+        
         $public_key = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'pub_key'));
         $public_key = $public_key->value;
-        
-        mtrace('public key from config: ' . $public_key. '\n\n');
-        mtrace('First values before encrypted message: '.substr($csv, 0, 501).'...\n\n');
         
         //Encryption of the csv String, so only the user with the private key can read it
         $publicKey = openssl_get_publickey($public_key);
@@ -100,184 +89,145 @@ class log_task extends \core\task\scheduled_task {
         }
         $message = bin2hex($output);
         
-        mtrace('First hexvalues of encrypted message: '.substr($message, 0, 501).'...\n\n');
-        
         //get course
         $text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'courseid'));
         $course = $DB->get_record('course', array('id'=> $text->value));
-        $modulename = 'resource';
         
-        mtrace('Courseid from config: '.$course->id);
+        $forum_ids = $DB->get_records('forum', array('course'=>$course->id));
         
         require_once($CFG->dirroot . '/course/modlib.php');
+        require_once($CFG->dirroot . '/mod/forum/externallib.php');
         
-        $component = 'mod_resource';
-        $filearea = 'content';
-        $itemid = 0;
-        
-        $data3 = new \stdClass();
-        $data3->course = $course->id;
-        $data3->name = 'Log-'.$filename.'.txt';
-        $data3->intro = '';
-        $data3->introformat = 0;
-        $data3->section = 1;
-        $data3->module = 18;
-        $data3->modulename =$modulename;
-        $data3->add ='resource';
-        $data3->return = 0;
-        $data3->sr = 0;
-        $data3->files = $itemid;
-        $data3->visible= 1;
-        $data3->display = 4;
-        //Values from set_moduleinfo_defaults
-        $data3->instance = '';
-        $data3->coursemodule = '';
-        $data3->groupingid = 0;
-        $data3->completion = COMPLETION_DISABLED;
-        $data3->completionview = COMPLETION_VIEW_NOT_REQUIRED;
-        $data3->completionexpected = 0;
-        $data3->completiongradeitemnumber = null;
-        $data3->conditiongradegroup = array();
-        $data3->conditionfieldgroup = array();
-        $data3->visibleoncoursepage = 1;
-        //Other values set here before
-        $data3->groupmode = 0;
-        $data3->visibleold = 1;
-        $data3->showdescription = 0;
-        
-        $mform = null;
-        include_modulelib('resource');
-        
-        // From this point we make database changes, so start transaction.
-        $transaction = $DB->start_delegated_transaction();
-        
-        mtrace("\n\n data3 add_course_module: ");
-        var_dump($data3);
-        
-        //Add course module
-        if (!$data3->coursemodule = add_course_module($data3)) {
-            print_error('cannotaddcoursemodule');
-        }
-
-        $addinstancefunction    = $data3->modulename."_add_instance";
-        try {
-            $returnfromfunc = $addinstancefunction($data3, $mform);
-        } catch (\moodle_exception $e) {
-            $returnfromfunc = $e;
-        }
-        if (!$returnfromfunc or !is_number($returnfromfunc)) {
-            // Undo everything we can. This is not necessary for databases which
-            // support transactions, but improves consistency for other databases.
-            \context_helper::delete_instance(CONTEXT_MODULE, $data3->coursemodule);
-            $DB->delete_records('course_modules', array('id'=>$data3->coursemodule));
+        //If there is no Forum, create one
+        if (count($forum_ids) < 1)
+        {
+            $forum = new \stdClass();
+            $forum->course = $course->id;
+            $forum->type = "general";
+            $forum->intro = "Test Forum";
+            $forum->name = "Meine Logdaten";
+            $forum->timemodified = time();
+            $forum->id = $DB->insert_record("forum", $forum);
             
-            if ($returnfromfunc instanceof \moodle_exception) {
-                throw $returnfromfunc;
-            } else if (!is_number($returnfromfunc)) {
-                print_error('invalidfunction', '', course_get_url($course, $data3->section));
-            } else {
-                print_error('cannotaddnewmodule', '', course_get_url($course, $data3->section), $data3->modulename);
+            if (! $module = $DB->get_record("modules", array("name" => "forum"))) {
+                echo $OUTPUT->notification("Could not find forum module!!");
+                return false;
             }
+            
+            $mod = new \stdClass();
+            $mod->course = $course->id;
+            $mod->module = $module->id;
+            $mod->instance = $forum->id;
+            $mod->section = 2;
+            if (! $mod->coursemodule = add_course_module($mod) ) {   // assumes course/lib.php is loaded
+                echo $OUTPUT->notification("Could not add a new course module to the course '" . $course->id . "'");
+                return false;
+            }
+            
+            if (!$sectionid = course_add_cm_to_section ($course->id, $mod->coursemodule, 2, null) ) {   // assumes course/lib.php is loaded
+                echo $OUTPUT->notification("Could not add the new course module to that section");
+                return false;
+            }
+            
+            $DB->set_field("course_modules", "section", $sectionid, array("id" => $mod->coursemodule));
+            
+            include_once("$CFG->dirroot/course/lib.php");
+            rebuild_course_cache($course->id);
+        }
+        //Check if there is an discussion
+        $forums = array_values($forum_ids);
+        $discussion_ids = $DB->get_records('forum_discussions', array('forum'=>$forums[0]->id));
+        
+        //Creating a discussion
+        list($course2, $cm) = get_course_and_cm_from_instance($forums[0], 'forum');
+        $context = \context_module::instance($cm->id);
+        $discussion = new \stdClass();
+        $discussion->course = $course2->id;
+        $discussion->forum = $forums[0]->id;
+        $discussion->message = "Hallo, anbei befinden sich die Logdaten";
+        $discussion->messageformat = FORMAT_HTML;
+        $discussion->messagetrust = trusttext_trusted($context);
+        $discussion->groupid = -1;
+        $discussion->mailnow = 0;
+        $discussion->subject = 'Log-'.$filename.'.txt';
+        $discussion->name = 'Log-'.$filename.'.txt';
+        $discussion->timestart = 0;
+        $discussion->timeend = 0;
+        $discussion->timelocked = 0;
+        $discussion->pinned = FORUM_DISCUSSION_UNPINNED;
+        $discussion->itemid = 1;
+        $discussion->attachments = 1;
+        
+        //Creating a post for the discussion
+        $timenow = isset($discussion->timenow) ? $discussion->timenow : time();
+        $post = new \stdClass();
+        $post->discussion    = 0;
+        $post->parent        = 0;
+        $post->privatereplyto = 0;
+        $post->userid        = 2;
+        $post->created       = $timenow;
+        $post->modified      = $timenow;
+        $post->mailed        = FORUM_MAILED_PENDING;
+        $post->subject       = $discussion->name;
+        $post->message       = $discussion->message;
+        $post->messageformat = $discussion->messageformat;
+        $post->messagetrust  = $discussion->messagetrust;
+        $post->attachment    = $discussion->attachments;
+        $post->forum         = $forums[0]->id;
+        $post->course        = $course2->id;
+        $post->mailnow       = $discussion->mailnow;
+        
+        \mod_forum\local\entities\post::add_message_counts($post);
+        $post->id = $DB->insert_record("forum_posts", $post);
+        
+        if (!empty($cm->id) && !empty($discussion->itemid)) {
+            $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_forum', 'post', $post->id,
+                \mod_forum_post_form::editor_options($context, null), $post->message);
+            
+            $DB->set_field('forum_posts', 'message', $text, array('id'=>$post->id));
         }
         
-        $data3->instance = $returnfromfunc;
-        
-        $DB->set_field('course_modules', 'instance', $returnfromfunc, array('id'=>$data3->coursemodule));
-        
-        // Update embedded links and save files.
-        $modcontext = \context_module::instance($data3->coursemodule);
-        mtrace("modContext: \n\n");
-        var_dump($modcontext);
-        
-        $draftitemid = file_get_submitted_draft_itemid($filearea);
-        mtrace("Draftitemid (file_get_submitted_draft_itemid: ".$draftitemid.'\n\n');
-        file_prepare_draft_area($draftitemid, $modcontext->id, $component, $filearea, $itemid);
+        //creation of file
+        $file = new \stdClass;
+        $file->contextid = $context->id;
+        $file->component = 'mod_forum';
+        $file->filearea  = 'attachment';
+        $file->itemid    = $post->id;
+        $file->filepath  = '/';
+        $file->filename  = 'Log-'.$filename.'.txt';
+        $file->source    = 'Log-'.$filename.'.txt';
         $fs = get_file_storage();
+        $file = $fs->create_file_from_string($file, $message);
         
-        mtrace("Draftitemid: ".$draftitemid.'\n\n');
-        mtrace("fileStorage: ");
-        var_dump($fs);
-        
-        $filerecord = array(
-            'contextid' => $modcontext->id,
-            'component' => $component,
-            'filearea' => $filearea,
-            'itemid' => $itemid,
-            'filepath' => '/',
-            'filename' => 'Log-'.$filename.'.txt',
-            'source' => 'disea_consent'
-        );
-        
-        $fs->create_file_from_string($filerecord, $message);
-        //file_save_draft_area_files($draftitemid, $modcontext->id, $component, $filearea, $itemid);
-        
-        $file = $fs->get_area_files($modcontext->id, $component, $filearea, 0, $itemid, false);
-        $file = reset($file);
-        
-        //Check if folders are writeable
-        var_dump($CFG->dataroot);
-        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot)), -4));
-        if (is_writable($CFG->dataroot)) {
-            var_dump( 'Die Datei kann geschrieben werden');
-        } else {
-            var_dump( 'Die Datei kann nicht geschrieben werden');
-        }
-        var_dump($CFG->dataroot.'/filedir');
-        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/filedir')), -4));
-        if (is_writable($CFG->dataroot.'/filedir')) {
-            var_dump('Die Datei kann geschrieben werden');
-        } else {
-            var_dump( 'Die Datei kann nicht geschrieben werden');
-        }
-        var_dump($CFG->dataroot.'/trashdir');
-        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/trashdir')), -4));
-        if (is_writable($CFG->dataroot.'/trashdir')) {
-            var_dump('Die Datei kann geschrieben werden');
-        } else {
-            var_dump( 'Die Datei kann nicht geschrieben werden');
-        }
-        var_dump($CFG->dataroot.'/temp/filestorage');
-        var_dump(substr(sprintf('%o', fileperms($CFG->dataroot.'/temp/filestorage')), -4));
-        if (is_writable($CFG->dataroot.'/temp/filestorage')) {
-            var_dump('Die Datei kann geschrieben werden');
-        } else {
-            var_dump( 'Die Datei kann nicht geschrieben werden');
+        //adding file and creation of discussion
+        $discussion->firstpost    = $post->id;
+        $discussion->timemodified = $timenow;
+        $discussion->usermodified = $post->userid;
+        $discussion->userid       = 2;
+        $discussion->assessed     = 0;
+        $post->discussion = $DB->insert_record("forum_discussions", $discussion);
+        $DB->set_field("forum_posts", "discussion", $post->discussion, array("id"=>$post->id));
+        if (!empty($cm->id)) {
+            $r = forum_add_attachment($post, $forums[0], $cm, 1);
+            forum_trigger_content_uploaded_event($post, $cm, 'forum_add_discussion');
         }
         
-        $sectionid = course_add_cm_to_section($course, $data3->coursemodule, $data3->section);
-        mtrace("Sectionid: ".$sectionid);
-        
-        // Trigger event based on the action we did.
-        // Api create_from_cm expects modname and id property, and we don't want to modify $moduleinfo since we are returning it.
-        $eventdata = clone $data3;
-        $eventdata->modname = $eventdata->modulename;
-        $eventdata->id = $eventdata->coursemodule;
-        $event = \core\event\course_module_created::create_from_cm($eventdata, $modcontext);
-        $event->trigger();
-        
-        $data3 = edit_module_post_actions($data3, $course);
-        $transaction->allow_commit();
-        
-        //Just for testing
-        /*
-        $sql_c = 'Select d.courseid, COUNT(case when d.choice = 1 then 1 else null end) as yes, '.
-            'COUNT(case when d.choice = 0 then 1 else null end) as no '.
-            'from mdl_disea_consent d '.
-            'Group by d.courseid';
-        $consent_user = $DB->get_records_sql($sql_c);
-        $consent_users = array_values($consent_user);
-        mtrace("Print some statistics");
-        mtrace("Anzahl Kurse mit aktiviertem Consent: ".count($consent_users));
-        var_dump($consent_users);
-        */
-        //29414
-        mtrace("Check for resources");
-        $res = $DB->get_records('resource', array('course'=>$course->id));
-        var_dump($res);
-        
-        mtrace("Check for course_modules");
-        $res2 = $DB->get_records('course_modules', array('course'=>$course->id));
-        var_dump($res2);
+        if($discussionid = $post->discussion)
+        {
+            $params = array(
+                'context' => $context,
+                'objectid' => $discussion->id,
+                'other' => array(
+                    'forumid' => $forums[0]->id,
+                )
+            );
+            
+            $event = \mod_forum\event\discussion_created::create($params);
+            $event->add_record_snapshot('forum_discussions', $discussion);
+            $event->trigger();
+        } else {
+            throw new \moodle_exception('couldnotadd', 'forum');
+        }
     }
     
 }
