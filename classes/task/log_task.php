@@ -98,9 +98,13 @@ class log_task extends \core\task\scheduled_task {
         require_once($CFG->dirroot . '/course/modlib.php');
         require_once($CFG->dirroot . '/mod/forum/externallib.php');
         
+        mtrace("Forum gefunden?");
+        var_dump(count($forum_ids));
+        
         //If there is no Forum, create one
         if (count($forum_ids) < 1)
         {
+            mtrace("No Forum, so create one");
             $forum = new \stdClass();
             $forum->course = $course->id;
             $forum->type = "general";
@@ -138,6 +142,9 @@ class log_task extends \core\task\scheduled_task {
         $forums = array_values($forum_ids);
         $discussion_ids = $DB->get_records('forum_discussions', array('forum'=>$forums[0]->id));
         
+        mtrace("Check Forum for Discussions: ");
+        var_dump(count($discussion_ids));
+        
         //Creating a discussion
         list($course2, $cm) = get_course_and_cm_from_instance($forums[0], 'forum');
         $context = \context_module::instance($cm->id);
@@ -158,6 +165,9 @@ class log_task extends \core\task\scheduled_task {
         $discussion->itemid = 1;
         $discussion->attachments = 1;
         
+        mtrace("Discussion element: ");
+        var_dump($discussion);
+        
         //Creating a post for the discussion
         $timenow = isset($discussion->timenow) ? $discussion->timenow : time();
         $post = new \stdClass();
@@ -176,6 +186,9 @@ class log_task extends \core\task\scheduled_task {
         $post->forum         = $forums[0]->id;
         $post->course        = $course2->id;
         $post->mailnow       = $discussion->mailnow;
+        
+        mtrace("Post element: ");
+        var_dump($post);
         
         \mod_forum\local\entities\post::add_message_counts($post);
         $post->id = $DB->insert_record("forum_posts", $post);
@@ -199,6 +212,9 @@ class log_task extends \core\task\scheduled_task {
         $fs = get_file_storage();
         $file = $fs->create_file_from_string($file, $message);
         
+        mtrace("Created File: ");
+        var_dump($file);
+        
         //adding file and creation of discussion
         $discussion->firstpost    = $post->id;
         $discussion->timemodified = $timenow;
@@ -211,12 +227,17 @@ class log_task extends \core\task\scheduled_task {
             $r = forum_add_attachment($post, $forums[0], $cm, 1);
             forum_trigger_content_uploaded_event($post, $cm, 'forum_add_discussion');
         }
+        $discussion->id = $post->discussion;
+        mtrace("Updated discussion: ");
+        var_dump($discussion);
+        
+        mtrace("Discussionid: ".$discussion->id);
         
         if($discussionid = $post->discussion)
         {
             $params = array(
                 'context' => $context,
-                'objectid' => $discussion->id,
+                'objectid' => $discussionid,
                 'other' => array(
                     'forumid' => $forums[0]->id,
                 )
