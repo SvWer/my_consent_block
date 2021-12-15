@@ -21,6 +21,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/blocks/my_consent_block/classes/form/download_button_form.php');
+
 class block_my_consent_block extends block_base {
     
     function init() {
@@ -39,13 +42,16 @@ class block_my_consent_block extends block_base {
     }
 
     function get_content() {
-        global $DB, $USER, $PAGE, $OUTPUT;
+        global $DB, $USER, $PAGE, $OUTPUT, $CFG;
         
         //url to redirect to consent
         $url = new moodle_url('/blocks/my_consent_block/consent.php', array('id'=>$PAGE->course->id));
+        $show = new moodle_url('/blocks/my_consent_block/list_files.php', array('id'=>$PAGE->course->id));
         
         //Check database, if user already signed the consent
         $user = $DB->get_record('disea_consent', array('userid' => $USER->id, 'courseid' => $PAGE->course->id));
+        
+       
        
         if(!$user) {
             //If user is not in database for this course, he has to read and sign the consent
@@ -65,6 +71,24 @@ class block_my_consent_block extends block_base {
             ];
             
             $content = $OUTPUT->render_from_template('block_my_consent_block/block_content', $templatecontext);
+            $context = context_system::instance();
+            
+            var_dump("Capability TEst: ");
+            var_dump(has_capability('block/block_my_consent_block:download', $context));
+            var_dump("Capability TEst: ");
+            var_dump(has_capability('block/block_my_consent_block:download', $context));
+            var_dump("Capability TEst: ");
+            var_dump(has_capability('block/block_my_consent_block:download', $context));
+            var_dump("Capability TEst: ");
+            var_dump(has_capability('block/block_my_consent_block:download', $context));
+            
+            if (has_capability('block/block_my_consent_block:download', $context)) {
+                //Create downloadbutton
+                $mform = new download_button_form($show);
+                
+                $content = $content . $mform->render();
+            }
+            
         }
 
         if ($this->content !== NULL) {
