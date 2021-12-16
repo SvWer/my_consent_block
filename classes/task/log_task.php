@@ -18,7 +18,7 @@ class log_task extends \core\task\scheduled_task {
     }
     
     public function execute() {
-        global $CFG, $DB, $OUTPUT;
+        global $DB;
         //get Time of last run of Log Task
         $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE classname = "block_my_consent_block\\\\task\\\\log_task"';
         $t = $DB->get_records_sql($sql_t);
@@ -58,7 +58,6 @@ class log_task extends \core\task\scheduled_task {
         
         //Create CSV-String from logdata
         $filename = date("Y-m-d--H.i.s");
-        
         $fh = fopen('php://temp', 'rw');
         fputcsv($fh, array('id','eventname','component','action','target',
             'obejttable','obejtid','contextid',
@@ -73,6 +72,7 @@ class log_task extends \core\task\scheduled_task {
         $csv = stream_get_contents($fh);
         fclose($fh);
         
+        //Get public key from config
         $public_key = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'pub_key'));
         $public_key = $public_key->value;
         

@@ -31,34 +31,11 @@ if($ADMIN->fulltree) {
         get_string('config_consent_text', 'block_my_consent_block'),
         get_string('config_consent_description', 'block_my_consent_block'),
         '', PARAM_RAW,80));
-    //Couseid
-    $settings->add(new admin_setting_configtext('block_my_consent_block/courseid',
-        get_string('config_title', 'block_my_consent_block'),
-        get_string('config_text', 'block_my_consent_block'),
-        '', PARAM_INT));
     //public key
     $settings->add(new admin_setting_configtextarea('block_my_consent_block/pub_key',
         get_string('config_key_title', 'block_my_consent_block'),
         get_string('config_key_text', 'block_my_consent_block'),
         '', PARAM_RAW,80));
 }
-
-
-
-
-// if($hassiteconfig) {
-//     $ADMIN->add('blocks', new admin_category('Disea_consent_settings', 'block_my_consent_block'));
-//     $settingspage = new admin_settingpage('manage__disea_consent', 'disea_consent');
-    
-//     if($ADMIN->fulltree) {
-//         $settingspage->add(new admin_setting_configcheckbox('block_my_consent_block/showcourses',
-//             get_string('showcourses', 'block_my_consent_block'),
-//             get_string('showcoursesdesc', 'block_my_consent_block'),
-//             0));
-//         $settingspage->add(new admin_setting_configtext('block_my_consent_block/showcourses', 'Erster Hinweistext', 'Zweiter Hinweistext',
-//             'noreply@localhost.com', PARAM_EMAIL));
-//     }
-//     $ADMIN->add('localplugins', $settingspage);
-// }
 
 

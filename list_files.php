@@ -22,22 +22,16 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/blocks/my_consent_block/classes/form/consent_form.php');
 
 global $CFG, $PAGE, $OUTPUT;
 
-$PAGE->set_url(new moodle_url('/blocks/my_consent_block/consent.php'));
+$PAGE->set_url(new moodle_url('/blocks/my_consent_block/list_files.php'));
 $PAGE->set_context(\context_system::instance());
 $PAGE->set_title(get_string('pluginname', 'block_my_consent_block'));
 
-//Get Course ID from url to be able to redirect
-$courseid = optional_param('id',NULL, PARAM_INT);
-
-//create redirecting url
-$url = $CFG->wwwroot.'/blocks/my_consent_block/list_files.php?id='.$courseid;
 
 echo $OUTPUT->header();
-
+echo "<h2>LogDaten:</h2>";
 $context = context_system::instance();
 
 $fs = get_file_storage();
@@ -45,8 +39,12 @@ $files = $fs->get_area_files($context->id, 'my_consent_block', 'disea');
 
 foreach ($files as $file) {
     $filename = $file->get_filename();
-    $url = $CFG->wwwroot.'/blocks/my_consent_block/download.php?context='.$context->id.'&id='.$file->get_itemid().'&fname='.$filename;
-    echo '<a href="'.$url.'">'.$filename.'</a><br>';
+    if($filename === "."){
+        //don't print
+    } else {
+        $url = $CFG->wwwroot.'/blocks/my_consent_block/download.php?context='.$context->id.'&id='.$file->get_itemid().'&fname='.$filename;
+        echo '<a href="'.$url.'">'.$filename.'</a><br>';
+    }
 }
 
 echo $OUTPUT->footer();

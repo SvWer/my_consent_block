@@ -24,7 +24,7 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/blocks/my_consent_block/classes/form/consent_form.php');
 
-global $DB, $USER, $COURSE;
+global $DB, $USER, $CFG, $PAGE, $OUTPUT;
 
 $PAGE->set_url(new moodle_url('/blocks/my_consent_block/consent.php'));
 $PAGE->set_context(\context_system::instance());
