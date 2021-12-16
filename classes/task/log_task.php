@@ -24,6 +24,8 @@ class log_task extends \core\task\scheduled_task {
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
+        $t[0]->timestart = 0;
+        
         //SQL Query to get logdata in interval of one week
         $query1 = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
             'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
@@ -55,6 +57,7 @@ class log_task extends \core\task\scheduled_task {
         //get Logdata from database
         $log_data1 = $DB->get_records_sql($query1);
         $data = array_values($log_data1);
+        mtrace("Number Rows: " . count($data));
         
         //Create CSV-String from logdata
         $filename = date("Y-m-d--H.i.s");
