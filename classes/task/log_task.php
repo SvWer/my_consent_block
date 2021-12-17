@@ -57,6 +57,7 @@ class log_task extends \core\task\scheduled_task {
         //get Logdata from database
         $log_data1 = $DB->get_records_sql($query1);
         $data = array_values($log_data1);
+        mtrace("Daten aus Datenbank geholt");
         mtrace("Number Rows: " . count($data));
         
         //Create CSV-String from logdata
@@ -75,9 +76,13 @@ class log_task extends \core\task\scheduled_task {
         $csv = stream_get_contents($fh);
         fclose($fh);
         
+        mtrace("CSV String erstellt");
+        
         //Get public key from config
         $public_key = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'pub_key'));
         $public_key = $public_key->value;
+        
+        mtrace("Public key geholt: " . $public_key);
         
         //Encryption of the csv String, so only the user with the private key can read it
         $publicKey = openssl_get_publickey($public_key);
@@ -92,6 +97,8 @@ class log_task extends \core\task\scheduled_task {
         }
         $message = bin2hex($output);
         
+        mtrace("Nachricht verschlüsselt");
+        
         $context = \context_system::instance();
         
         //creation of file
@@ -105,6 +112,8 @@ class log_task extends \core\task\scheduled_task {
         $file->source    = 'Log-'.$filename.'.txt';
         $fs = get_file_storage();
         $file = $fs->create_file_from_string($file, $message);
+        
+        mtrace("Datei erstellt");
         
         mtrace("Created File: ");
         var_dump($file);  
