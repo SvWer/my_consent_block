@@ -63,6 +63,12 @@ class log_task extends \core\task\scheduled_task {
         for ($i = 0; $i < $blocks; $i++)
         {
             $cnt = 0;
+            $filename = date("Y-m-d--H.i.s").'__'.$i;
+            $fh = fopen('php://temp', 'rw');
+            fputcsv($fh, array('id','eventname','component','action','target',
+                'obejcttable','obejctid','contextid',
+                'contextlevel','contextinstanceid','userid','courseid','coursename_short',
+                'relateduserid','other','timecreated'));
             foreach ($data as $row) {
                 $cnt++;
                 if($cnt < $i*50000) {
@@ -73,12 +79,6 @@ class log_task extends \core\task\scheduled_task {
                     break;
                 }
                 else{
-                    $filename = date("Y-m-d--H.i.s").'__'.$i;
-                    $fh = fopen('php://temp', 'rw');
-                    fputcsv($fh, array('id','eventname','component','action','target',
-                        'obejttable','obejtid','contextid',
-                        'contextlevel','contextinstanceid','userid','firstname','lastname','courseid','coursename_short',
-                        'relateduserid','other','timecreated'));
                     fputcsv($fh, json_decode(json_encode($row), true));
                 }
             }
