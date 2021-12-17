@@ -23,7 +23,7 @@ class log_task extends \core\task\scheduled_task {
         $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE classname = "block_my_consent_block\\\\task\\\\log_task"';
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
-        
+        ini_set('memory_limit', '2048M');
         $t[0]->timestart = 0;
         
         //SQL Query to get logdata in interval of one week
@@ -60,7 +60,81 @@ class log_task extends \core\task\scheduled_task {
         mtrace("Daten aus Datenbank geholt");
         mtrace("Number Rows: " . count($data));
         
-        //Create CSV-String from logdata
+        $blocks = count($data) / 50000;
+        //For every block
+        for ($i = 0; $i < $blocks; $i++)
+        {
+            $cnt = 0;
+            foreach ($data as $row) {
+                $cnt++;
+                if($cnt < $i*50000) {
+                    continue;
+                }
+                elseif($cnt > $i*50000 + 50000)
+                {
+                    break;
+                }
+                else{
+                    $filename = date("Y-m-d--H.i.s").'__'.$i;
+                    $fh = fopen('php://temp', 'rw');
+                    fputcsv($fh, array('id','eventname','component','action','target',
+                        'obejttable','obejtid','contextid',
+                        'contextlevel','contextinstanceid','userid','firstname','lastname','courseid','coursename_short',
+                        'relateduserid','other','timecreated'));
+                    fputcsv($fh, json_decode(json_encode($row), true));
+                }
+            }
+            rewind($fh);
+            $csv = stream_get_contents($fh);
+            fclose($fh);
+            
+            mtrace("CSV String erstellt");
+            
+            //Get public key from config
+            $public_key = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'pub_key'));
+            $public_key = $public_key->value;
+            
+            mtrace("Public key geholt: " . $public_key);
+            
+            //Encryption of the csv String, so only the user with the private key can read it
+            $publicKey = openssl_get_publickey($public_key);
+            $encryptedMessage = "";
+            $max_length = 501;
+            $output = '';
+            while($csv) {
+                $input = substr($csv, 0, $max_length);
+                $csv = substr($csv, $max_length);
+                openssl_public_encrypt($input,$encryptedMessage,$publicKey);
+                $output.=$encryptedMessage;
+            }
+            $message = bin2hex($output);
+            
+            mtrace("Nachricht verschluesselt");
+            
+            $context = \context_system::instance();
+            
+            //creation of file
+            $file = new \stdClass;
+            $file->contextid = $context->id;
+            $file->component = 'my_consent_block';
+            $file->filearea  = 'disea';
+            $file->itemid    = 4;
+            $file->filepath  = '/';
+            $file->filename  = 'Log-'.$filename.'.txt';
+            $file->source    = 'Log-'.$filename.'.txt';
+            mtrace("file object");
+            var_dump($file);
+            $fs = get_file_storage();
+            mtrace("get File storage");
+            $file = $fs->create_file_from_string($file, $message);
+            
+            mtrace("Datei erstellt");
+            
+            mtrace("Created File: ");
+            var_dump($file);  
+        }
+        
+        /* //Create CSV-String from logdata
         $filename = date("Y-m-d--H.i.s");
         $fh = fopen('php://temp', 'rw');
         fputcsv($fh, array('id','eventname','component','action','target',
@@ -97,7 +171,7 @@ class log_task extends \core\task\scheduled_task {
         }
         $message = bin2hex($output);
         
-        mtrace("Nachricht verschlüsselt");
+        mtrace("Nachricht verschluesselt");
         
         $context = \context_system::instance();
         
@@ -116,6 +190,6 @@ class log_task extends \core\task\scheduled_task {
         mtrace("Datei erstellt");
         
         mtrace("Created File: ");
-        var_dump($file);  
+        var_dump($file);   */
     }
 }
