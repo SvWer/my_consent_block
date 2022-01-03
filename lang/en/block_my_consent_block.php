@@ -53,3 +53,7 @@ $string['decline_task_name'] = 'Disea decline Task';
 
 $string['messageprovider'] = 'Disea Message Provider';
 $string['messageprovider:logdata_disea'] = 'Disea Message Provider';
+
+$string['download'] = 'Download';
+$string['back'] = 'Back';
+$string['delete'] = 'Delete';

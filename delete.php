@@ -1,5 +1,8 @@
 <?php
 require_once('../../config.php');
+global $CFG;
+
+
 
 
 require_login();
@@ -9,6 +12,7 @@ if (has_capability('block/my_consent_block:download', $context)) {
     $coursecontextid= optional_param('context', 0, PARAM_INT);
     $irgendeine_id = optional_param('id', 0, PARAM_INT);
     $fname = optional_param('fname', 0, PARAM_TEXT);
+    $courseid = optional_param('courseid',NULL, PARAM_INT);
     
     $fs = get_file_storage();
     
@@ -18,7 +22,9 @@ if (has_capability('block/my_consent_block:download', $context)) {
         $irgendeine_id,
         '/',
         $fname);
-    send_stored_file($storedfile, null, 0, true);
-   
+    if($storedfile) {
+        $storedfile->delete();
+    }
+    redirect($CFG->wwwroot.'/blocks/my_consent_block/list_files.php?id='.$courseid);
 }
     

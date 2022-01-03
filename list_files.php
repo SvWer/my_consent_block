@@ -29,9 +29,12 @@ $PAGE->set_url(new moodle_url('/blocks/my_consent_block/list_files.php'));
 $PAGE->set_context(\context_system::instance());
 $PAGE->set_title(get_string('pluginname', 'block_my_consent_block'));
 
+$courseid = optional_param('id',NULL, PARAM_INT);
+$courseurl = $CFG->wwwroot.'/course/view.php?id='.$courseid;
 
 echo $OUTPUT->header();
 echo "<h2>LogDaten:</h2>";
+echo '<a class="btn btn-primary" href="'.$courseurl.'">'.get_string('back', 'block_my_consent_block').'</a><br><br>';
 $context = context_system::instance();
 
 $fs = get_file_storage();
@@ -42,9 +45,12 @@ foreach ($files as $file) {
     if($filename === "."){
         //don't print
     } else {
-        $url = $CFG->wwwroot.'/blocks/my_consent_block/download.php?context='.$context->id.'&id='.$file->get_itemid().'&fname='.$filename;
-        echo '<a href="'.$url.'">'.$filename.'</a><br>';
+        $url = $CFG->wwwroot.'/blocks/my_consent_block/download.php?context='.$context->id.'&id='.$file->get_itemid().'&fname='.$filename.'&courseid='.$courseid;
+        $del_url = $CFG->wwwroot.'/blocks/my_consent_block/delete.php?context='.$context->id.'&id='.$file->get_itemid().'&fname='.$filename.'&courseid='.$courseid;
+        echo $filename;
+        echo '  <a class="btn btn-primary" href="'.$url.'">'.get_string('download', 'block_my_consent_block').'</a>';
+        echo '  <a class="btn btn-primary" href="'.$del_url.'">'.get_string('delete', 'block_my_consent_block').'</a><br>';
     }
 }
-
+echo '<br><br><a class="btn btn-primary" href="'.$courseurl.'">Back</a>';
 echo $OUTPUT->footer();
