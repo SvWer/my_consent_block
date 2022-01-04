@@ -55,5 +55,13 @@ $string['messageprovider'] = 'Disea Message Provider';
 $string['messageprovider:logdata_disea'] = 'Disea Message Provider';
 
 $string['download'] = 'Herunterladen';
-$string['back'] = 'Zurück';
+$string['back'] = 'Zur&uuml;ck';
 $string['delete'] = 'Entfernen';
+
+//Privacy API
+$string['privacy:metadata:disea_consent'] = 'Informationen &uuml;ber die Wahl des Benutzers in verschiedenen Kursen &uuml;ber die Nutzung der Daten f&uuml;r die wissenschaftliche Forschung.';
+$string['privacy:metadata:disea_consent:userid'] = 'Die ID des Benutzers';
+$string['privacy:metadata:disea_consent:courseid'] = 'Die ID des Kurses des Benutzers';
+$string['privacy:metadata:disea_consent:choice'] = 'Die Wahl, die der Benutzer f&uuml;r die DiSEA Einwilligungserkl&auml;rung getroffen hat.';
+
+$string['privacy:data'] = 'Daten des Nutzers f&uuml;r DiSEA Einwilligungserkl&auml;rung';

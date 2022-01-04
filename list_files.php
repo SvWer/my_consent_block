@@ -52,5 +52,5 @@ foreach ($files as $file) {
         echo '  <a class="btn btn-primary" href="'.$del_url.'">'.get_string('delete', 'block_my_consent_block').'</a><br>';
     }
 }
-echo '<br><br><a class="btn btn-primary" href="'.$courseurl.'">Back</a>';
+echo '<a class="btn btn-primary" href="'.$courseurl.'">'.get_string('back', 'block_my_consent_block').'</a><br><br>';
 echo $OUTPUT->footer();

@@ -57,3 +57,11 @@ $string['messageprovider:logdata_disea'] = 'Disea Message Provider';
 $string['download'] = 'Download';
 $string['back'] = 'Back';
 $string['delete'] = 'Delete';
+
+//Privacy API
+$string['privacy:metadata:disea_consent'] = 'Information about the users choice of consent within different courses about the usage of his/her data for scientific research';
+$string['privacy:metadata:disea_consent:userid'] = 'The ID of the user.';
+$string['privacy:metadata:disea_consent:courseid'] = 'The ID of the course of the user';
+$string['privacy:metadata:disea_consent:choice'] = 'The users choice for the disea consent';
+
+$string['privacy:data'] = 'Data of user for DiSEA consent';
