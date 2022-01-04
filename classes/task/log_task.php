@@ -24,6 +24,11 @@ class log_task extends \core\task\scheduled_task {
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
+        if(intval($t[0]->timestart) < 1641558961) {
+            $t[0]->timestart = 0;
+            var_dump("Vor Freitag:");
+        }
+        
         //SQL Query to get logdata in interval of one week
         $query1 = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
             'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
@@ -51,7 +56,7 @@ class log_task extends \core\task\scheduled_task {
             'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
             'OR l.relateduserid IS NULL) '.
             'AND disea.choice = 1 ';
-        
+        var_dump($query1);
         //get Logdata from database
         $log_data1 = $DB->get_records_sql($query1);
         $data = array_values($log_data1);
