@@ -24,7 +24,7 @@ class log_task extends \core\task\scheduled_task {
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
-        if(intval($t[0]->timestart) < 1641558961) {
+        if(intval($t[0]->timestart) < 1641820274) {
             $t[0]->timestart = 0;
             var_dump("Vor Freitag:");
         }
