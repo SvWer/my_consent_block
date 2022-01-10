@@ -24,10 +24,7 @@ class log_task extends \core\task\scheduled_task {
         $t = $DB->get_records_sql($sql_t);
         $t = array_values($t);
         
-        if(intval($t[0]->timestart) < 1642319761) {
-            $t[0]->timestart = 0;
-            var_dump("Time 0:");
-        }
+        $t[0]->timestart = 0;
         
         //SQL Query to get logdata in interval of one week
         $query1 = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
