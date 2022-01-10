@@ -26,7 +26,7 @@ class log_task extends \core\task\scheduled_task {
         
         if(intval($t[0]->timestart) < 1642319761) {
             $t[0]->timestart = 0;
-            var_dump("Vor Freitag:");
+            var_dump("Time 0:");
         }
         
         //SQL Query to get logdata in interval of one week
@@ -56,7 +56,7 @@ class log_task extends \core\task\scheduled_task {
             'WHERE l.courseid = disea2.courseid AND disea2.choice = 1) '.
             'OR l.relateduserid IS NULL) '.
             'AND disea.choice = 1 ';
-        var_dump($query1);
+
         //get Logdata from database
         $log_data1 = $DB->get_records_sql($query1);
         $data = array_values($log_data1);
@@ -64,6 +64,7 @@ class log_task extends \core\task\scheduled_task {
         mtrace("Number Rows: " . count($data));
         
         $blocks = count($data) / 50000;
+        mtrace("Number of blocks: ". $blocks);
         //For every block
         for ($i = 0; $i < $blocks; $i++)
         {
