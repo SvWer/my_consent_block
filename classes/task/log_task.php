@@ -71,7 +71,7 @@ class log_task extends \core\task\scheduled_task {
             fputcsv($fh, array('id','eventname','component','action','target',
                 'obejcttable','obejctid','contextid',
                 'contextlevel','contextinstanceid','userid','courseid','coursename_short',
-                'relateduserid','other','timecreated'));
+                'relateduserid','other','timecreated'), '|');
             foreach ($data as $row) {
                 $cnt++;
                 if($cnt < $i*50000) {
