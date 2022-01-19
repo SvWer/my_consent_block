@@ -82,7 +82,7 @@ class log_task extends \core\task\scheduled_task {
                     break;
                 }
                 else{
-                    fputcsv($fh, json_decode(json_encode($row), true));
+                    fputcsv($fh, json_decode(json_encode($row), true), '|');
                 }
             }
             rewind($fh);
