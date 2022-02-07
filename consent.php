@@ -33,7 +33,7 @@ $PAGE->set_title(get_string('pluginname', 'block_my_consent_block'));
 //Get Course ID from url to be able to redirect
 $courseid = optional_param('id',NULL, PARAM_INT);
 //Check id user is already in Database
-$user = $DB->get_record('disea_consent', array('userid' => $USER->id, 'courseid'=>$courseid));
+$user = $DB->get_record('disea_consent_all', array('userid' => $USER->id ));
 
 //create redirecting url
 $url = $CFG->wwwroot.'/blocks/my_consent_block/consent.php?id='.$courseid;
@@ -71,17 +71,17 @@ if($mform->is_cancelled()) {
         //if user is not in the database
         $recordtoinsert = new stdClass();
         $recordtoinsert->userid = $USER->id;
-        $recordtoinsert->courseid = $courseid;
+        //$recordtoinsert->courseid = -1;
         $recordtoinsert->choice = $choice;
         $recordtoinsert->timecreated = time();
         $recordtoinsert->timemodified = time();
-        $DB->insert_record('disea_consent', $recordtoinsert);
+        $DB->insert_record('disea_consent_all', $recordtoinsert);
         redirect($courseurl, get_string('database_insert', 'block_my_consent_block'));
     } else {
         //if user is in database, it needs to be updated
         $user->choice = $choice;
         $user->timemodified = time();
-        $DB->update_record('disea_consent', $user);
+        $DB->update_record('disea_consent_all', $user);
         redirect($courseurl, get_string('database_update', 'block_my_consent_block'));
     }
 }

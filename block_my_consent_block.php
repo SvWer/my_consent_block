@@ -49,7 +49,7 @@ class block_my_consent_block extends block_base {
         $show = new moodle_url('/blocks/my_consent_block/list_files.php', array('id'=>$PAGE->course->id));
         
         //Check database, if user already signed the consent
-        $user = $DB->get_record('disea_consent', array('userid' => $USER->id, 'courseid' => $PAGE->course->id));
+        $user = $DB->get_record('disea_consent_all', array('userid' => $USER->id));
         
         if(!$user) {
             //If user is not in database for this course, he has to read and sign the consent
