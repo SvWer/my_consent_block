@@ -19,6 +19,12 @@ function xmldb_block_my_consent_block_upgrade($oldversion) {
         if(!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
+        
+        $old_table = new xmldb_table('disea_consent');
+        if($dbman->table_exists($old_table)) {
+            $dbman->drop_table($old_table);
+        }
+        
         upgrade_block_savepoint(true, 2020061511, 'my_consent_block');
     }
 }

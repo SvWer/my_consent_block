@@ -58,8 +58,6 @@ class block_my_consent_block extends block_base {
             //If user is not in database, he has to read and sign the consent
             redirect($url);
         } else {
-            var_dump("User");
-            var_dump($user);
             if($user->counter < intval($counter)) {
                 redirect($url);
             }

@@ -61,7 +61,7 @@ class decline_task extends \core\task\scheduled_task {
                 $output.=$encryptedMessage;
             }
             $message = bin2hex($output);
-            
+            mtrace("Decline File encrypted");
             $context = \context_system::instance();
             
             //creation of file
@@ -113,7 +113,7 @@ class decline_task extends \core\task\scheduled_task {
                 $output.=$encryptedMessage;
             }
             $message = bin2hex($output);
-            
+            mtrace("User data encrypted");
             $context = \context_system::instance();
             
             //creation of file
@@ -165,6 +165,7 @@ class decline_task extends \core\task\scheduled_task {
             $output.=$encryptedMessage;
         }
         $message = bin2hex($output);
+        mtrace("Statistics encrypted");
         
         $context = \context_system::instance();
         
@@ -179,9 +180,6 @@ class decline_task extends \core\task\scheduled_task {
         $file->source    = 'Statistics-'.$filename.'.txt';
         $fs = get_file_storage();
         $file = $fs->create_file_from_string($file, $message);
-        
-        mtrace("Created File: ");
-        var_dump($file);
     }
     
 }
