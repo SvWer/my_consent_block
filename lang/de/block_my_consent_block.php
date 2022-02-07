@@ -36,6 +36,9 @@ $string['config_key_text'] = 'Bitte f&uuml;gen Sie hier den &ouml;ffentlichen Sc
 $string['config_consent_text'] = 'Ihre Einwilligungserkl&auml;rung';
 $string['config_consent_description'] = 'Bitte geben Sie hier ihre Einwilligungserkl&auml;rung als HTML formatierten Text ein.';
 
+$string['config_counter_title'] = 'Counter f&uuml;r Anzeige der Einwilligungserkl&auml;rung';
+$string['config_counter_text'] = '&Uuml;ber diesen Counter kann gesteuert werden, wann die Einwilligungserkl&auml;rung erneut f&uuml;r die Studierenden angezeigt werden soll.';
+
 $string['agree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich zu</strong>.';
 $string['disagree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich nicht zu</strong>.';     
 $string['no_choice'] = 'Bitte entscheiden Sie sich f&uuml;r eine Antwort!';

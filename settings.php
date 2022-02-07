@@ -36,6 +36,11 @@ if($ADMIN->fulltree) {
         get_string('config_key_title', 'block_my_consent_block'),
         get_string('config_key_text', 'block_my_consent_block'),
         '', PARAM_RAW,80));
+    //counter to reset view of consent
+    $settings->add(new admin_setting_configtextarea('block_my_consent_block/counter',
+        get_string('config_counter_title', 'block_my_consent_block'),
+        get_string('config_counter_text', 'block_my_consent_block'),
+        1, PARAM_INTEGER,80));
 }
 
 

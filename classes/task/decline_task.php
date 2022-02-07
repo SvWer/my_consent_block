@@ -28,7 +28,7 @@ class decline_task extends \core\task\scheduled_task {
         mtrace("Last time log task: ".intval($t[0]->timestart));
         
         //get all users, that accepted the consent
-        $sql_c = 'Select * FROM mdl_disea_consent WHERE choice = 0 AND timemodified >'.intval($t[0]->timestart);
+        $sql_c = 'Select * FROM mdl_disea_consent_all WHERE choice = 0 AND timemodified >'.intval($t[0]->timestart);
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
         
@@ -36,7 +36,7 @@ class decline_task extends \core\task\scheduled_task {
         
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
-            fputcsv($fh, array('id','userid','courseid','choice','timecreated','timemodified'));
+            fputcsv($fh, array('id','userid','choice','timecreated','timemodified'));
             if (count($consent_users) > 0) {
                 foreach ($consent_users as $row) {
                     fputcsv($fh, json_decode(json_encode($row), true));
@@ -79,7 +79,7 @@ class decline_task extends \core\task\scheduled_task {
 //#####################################################################################################################################
         //Export User Data with Consent Data
         //get all lines from disea_consent with name
-        $sql_c = 'Select d.id, d.userid, d.choice, d.courseid, u.firstname, u.lastname from mdl_disea_consent d '.
+        $sql_c = 'Select d.id, d.userid, d.choice, u.firstname, u.lastname from mdl_disea_consent_all d '.
                   'JOIN mdl_user u ON d.userid = u.id '.
                   'WHERE d.choice = 1';
         $consent_user = $DB->get_records_sql($sql_c);
@@ -87,7 +87,7 @@ class decline_task extends \core\task\scheduled_task {
 
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
-            fputcsv($fh, array('id','userid','choice','courseid','firstname','lastname'));
+            fputcsv($fh, array('id','userid','choice','firstname','lastname'));
             if (count($consent_users) > 0) {
                 foreach ($consent_users as $row) {
                     fputcsv($fh, json_decode(json_encode($row), true));

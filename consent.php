@@ -39,6 +39,9 @@ $user = $DB->get_record('disea_consent_all', array('userid' => $USER->id ));
 $url = $CFG->wwwroot.'/blocks/my_consent_block/consent.php?id='.$courseid;
 $courseurl = $CFG->wwwroot.'/course/view.php?id='.$courseid;
 
+$counter = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'counter'));
+$counter = $counter->value;
+
 //Make the form
 $mform = new consent_form($url);
 if($user) {
@@ -47,7 +50,7 @@ if($user) {
 
 //Check response from consent_form
 if($mform->is_cancelled()) {
-    if(!$user) {
+    if(!$user || $user->counter < $counter) {
         //If user wasn't in database and wants to cancel, stay on this page
         redirect($url);
     } else {
@@ -71,7 +74,7 @@ if($mform->is_cancelled()) {
         //if user is not in the database
         $recordtoinsert = new stdClass();
         $recordtoinsert->userid = $USER->id;
-        //$recordtoinsert->courseid = -1;
+        $recordtoinsert->counter = $counter;
         $recordtoinsert->choice = $choice;
         $recordtoinsert->timecreated = time();
         $recordtoinsert->timemodified = time();
@@ -80,6 +83,7 @@ if($mform->is_cancelled()) {
     } else {
         //if user is in database, it needs to be updated
         $user->choice = $choice;
+        $user->counter = $counter;
         $user->timemodified = time();
         $DB->update_record('disea_consent_all', $user);
         redirect($courseurl, get_string('database_update', 'block_my_consent_block'));

@@ -36,6 +36,9 @@ $string['config_key_text'] = 'Please insert the public key.';
 $string['config_consent_text'] =  'Your Consent';
 $string['config_consent_description'] = 'Please enter your consent in this field as html formatted text.';
 
+$string['config_counter_title'] = 'Counter for display of consent';
+$string['config_counter_text'] = 'This counter can be used to control when the consent should be shown again to everyone.';
+
 $string['agree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich zu</strong>.';
 $string['disagree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich nicht zu</strong>.';
 $string['no_choice'] = 'Please choose one the the answers!';

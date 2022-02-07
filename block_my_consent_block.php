@@ -50,11 +50,19 @@ class block_my_consent_block extends block_base {
         
         //Check database, if user already signed the consent
         $user = $DB->get_record('disea_consent_all', array('userid' => $USER->id));
+        //Get counter from config
+        $counter = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'counter'));
+        $counter = $counter->value;
         
         if(!$user) {
-            //If user is not in database for this course, he has to read and sign the consent
+            //If user is not in database, he has to read and sign the consent
             redirect($url);
         } else {
+            var_dump("User");
+            var_dump($user);
+            if($user->counter < intval($counter)) {
+                redirect($url);
+            }
             //If user is already in database, he stays at course, but now in the block there need
             // to be button, so that user can change his mind
             if($user->choice === "1") {
