@@ -130,6 +130,7 @@ class decline_task extends \core\task\scheduled_task {
         
         //###########################################################################################################################
         //create statistik 
+        /*
         $sql_c = 'Select d.courseid, COUNT(case when d.choice = 1 then 1 else null end) as yes, '.
             'COUNT(case when d.choice = 0 then 1 else null end) as no '.
             'from mdl_disea_consent d '.
@@ -180,6 +181,7 @@ class decline_task extends \core\task\scheduled_task {
         $file->source    = 'Statistics-'.$filename.'.txt';
         $fs = get_file_storage();
         $file = $fs->create_file_from_string($file, $message);
+        */
     }
     
 }
