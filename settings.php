@@ -26,28 +26,21 @@ defined('MOODLE_INTERNAL') || die();
     
    
 if($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext('block_my_consent_block/consent', 
-        get_string('config_title', 'block_my_consent_block'), 
-        get_string('config_text', 'block_my_consent_block'),
-	    'noreply@localhost.com', PARAM_EMAIL));
+    //Consent
+    $settings->add(new admin_setting_configtextarea('block_my_consent_block/consent_text',
+        get_string('config_consent_text', 'block_my_consent_block'),
+        get_string('config_consent_description', 'block_my_consent_block'),
+        '', PARAM_RAW,80));
+    //public key
+    $settings->add(new admin_setting_configtextarea('block_my_consent_block/pub_key',
+        get_string('config_key_title', 'block_my_consent_block'),
+        get_string('config_key_text', 'block_my_consent_block'),
+        '', PARAM_RAW,80));
+    //counter to reset view of consent
+    $settings->add(new admin_setting_configtextarea('block_my_consent_block/counter',
+        get_string('config_counter_title', 'block_my_consent_block'),
+        get_string('config_counter_text', 'block_my_consent_block'),
+        1, PARAM_INTEGER,80));
 }
-
-
-
-
-// if($hassiteconfig) {
-//     $ADMIN->add('blocks', new admin_category('Disea_consent_settings', 'block_my_consent_block'));
-//     $settingspage = new admin_settingpage('manage__disea_consent', 'disea_consent');
-    
-//     if($ADMIN->fulltree) {
-//         $settingspage->add(new admin_setting_configcheckbox('block_my_consent_block/showcourses',
-//             get_string('showcourses', 'block_my_consent_block'),
-//             get_string('showcoursesdesc', 'block_my_consent_block'),
-//             0));
-//         $settingspage->add(new admin_setting_configtext('block_my_consent_block/showcourses', 'Erster Hinweistext', 'Zweiter Hinweistext',
-//             'noreply@localhost.com', PARAM_EMAIL));
-//     }
-//     $ADMIN->add('localplugins', $settingspage);
-// }
 
 

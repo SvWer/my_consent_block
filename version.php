@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2020110904;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2020110300;        // Requires this Moodle version
+$plugin->version   = 2020061511;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->requires  = 2020061500;        // Requires this Moodle version
 $plugin->component = 'block_my_consent_block';      // Full name of the plugin (used for diagnostics)

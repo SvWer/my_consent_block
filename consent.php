@@ -24,7 +24,7 @@
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/blocks/my_consent_block/classes/form/consent_form.php');
 
-global $DB, $USER, $COURSE;
+global $DB, $USER, $CFG, $PAGE, $OUTPUT;
 
 $PAGE->set_url(new moodle_url('/blocks/my_consent_block/consent.php'));
 $PAGE->set_context(\context_system::instance());
@@ -33,11 +33,14 @@ $PAGE->set_title(get_string('pluginname', 'block_my_consent_block'));
 //Get Course ID from url to be able to redirect
 $courseid = optional_param('id',NULL, PARAM_INT);
 //Check id user is already in Database
-$user = $DB->get_record('disea_consent', array('userid' => $USER->id, 'courseid'=>$courseid));
+$user = $DB->get_record('disea_consent_all', array('userid' => $USER->id ));
 
 //create redirecting url
 $url = $CFG->wwwroot.'/blocks/my_consent_block/consent.php?id='.$courseid;
 $courseurl = $CFG->wwwroot.'/course/view.php?id='.$courseid;
+
+$counter = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'counter'));
+$counter = $counter->value;
 
 //Make the form
 $mform = new consent_form($url);
@@ -47,8 +50,8 @@ if($user) {
 
 //Check response from consent_form
 if($mform->is_cancelled()) {
-    if(!$user) {
-        //If user wasn't in database and wants to cancell, stay on this page
+    if(!$user || $user->counter < $counter) {
+        //If user wasn't in database and wants to cancel, stay on this page
         redirect($url);
     } else {
         //If user is already in database and cancels, return to course
@@ -57,6 +60,10 @@ if($mform->is_cancelled()) {
 } else if ($fromform = $mform->get_data()){
     //If submitted
     $id = $_POST ['agreedis'];
+    
+    if($id == null) {
+        redirect($url, get_string('no_choice', 'block_my_consent_block'), \core\output\notification::NOTIFY_ERROR);
+    }
     
     $choice = 0;
     if($id === '1') {
@@ -67,104 +74,28 @@ if($mform->is_cancelled()) {
         //if user is not in the database
         $recordtoinsert = new stdClass();
         $recordtoinsert->userid = $USER->id;
-        $recordtoinsert->courseid = $courseid;
+        $recordtoinsert->counter = $counter;
         $recordtoinsert->choice = $choice;
         $recordtoinsert->timecreated = time();
         $recordtoinsert->timemodified = time();
-        $DB->insert_record('disea_consent', $recordtoinsert);
-        
-        /**/
-        //If we need a pseudonymisation list: create it here
-        if($choice == 1) {
-            if(!$DB->get_record('disea_pseudo', array('userid'=>$USER->id))) {
-                $userobj = new stdClass();
-                //create object for db entry and string for Hash
-                $user_str = '';
-                $m_user = $DB ->get_record('user', array('id' => $USER->id));
-                $userobj->userid = $USER->id;
-                $user_str .= $USER->id . ';';
-                $userobj->firstname = $m_user->firstname;
-                $user_str .= $m_user->firstname . ';';
-                $userobj->middlename = $m_user->middlename;
-                $user_str .= $m_user->middlename . ';';
-                $userobj->lastname = $m_user->lastname;
-                $user_str .= $m_user->lastname . ';';
-                $userobj->email = $m_user->email;
-                $user_str .= $m_user->email . ';';
-                //create hash
-                $hash = hash('sha256', $user_str, false);
-                $userobj->hash = $hash;
-                $DB->insert_record('disea_pseudo', $userobj);
-            }            
-        }
-        /**/
-        
+        $DB->insert_record('disea_consent_all', $recordtoinsert);
         redirect($courseurl, get_string('database_insert', 'block_my_consent_block'));
     } else {
         //if user is in database, it needs to be updated
         $user->choice = $choice;
+        $user->counter = $counter;
         $user->timemodified = time();
-        $DB->update_record('disea_consent', $user);
-        
-        /**/
-        //If we need pseudonymisation list and user changes to 'no', delete entry
-        if($choice == 0) {
-            //If user declines consent in all courses he will be deleted in the pseudo table
-            if(!$DB->get_record('disea_consent', array('userid'=> $USER->id, 'choice'=>1))) {
-                $DB->delete_records('disea_pseudo', array('userid' => $USER->id));
-            }
-        } else {
-            $t = $DB->get_record('disea_pseudo', array('userid'=>$USER->id));
-            if(!$t) {
-                $userobj = new stdClass();
-                //create object for db entry and string for Hash
-                $user_str = '';
-                $m_user = $DB ->get_record('user', array('id' => $USER->id));
-                $userobj->userid = $USER->id;
-                $user_str .= $USER->id . ';';
-                $userobj->firstname = $m_user->firstname;
-                $user_str .= $m_user->firstname . ';';
-                $userobj->middlename = $m_user->middlename;
-                $user_str .= $m_user->middlename . ';';
-                $userobj->lastname = $m_user->lastname;
-                $user_str .= $m_user->lastname . ';';
-                $userobj->email = $m_user->email;
-                $user_str .= $m_user->email . ';';
-                //create hash
-                $hash = hash('sha256', $user_str, false);
-                $userobj->hash = $hash;
-                $DB->insert_record('disea_pseudo', $userobj);
-            }
-        }
-        /**/
+        $DB->update_record('disea_consent_all', $user);
         redirect($courseurl, get_string('database_update', 'block_my_consent_block'));
     }
 }
 
+$text = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'consent_text'));
 
 echo $OUTPUT->header();
 
 $templatecontext = (object)[
-    'consent_title' => get_string('consent_title', 'block_my_consent_block'),
-    'consent_greeting' => get_string('consent_greeting', 'block_my_consent_block'),
-    'consent_intro' => get_string('consent_intro', 'block_my_consent_block'),
-    'advantage_title' => get_string('advantage_title', 'block_my_consent_block'),
-    'advantage_one' => get_string('advantage_one', 'block_my_consent_block'),
-    'advantage_two' => get_string('advantage_two', 'block_my_consent_block'),
-    'data_collection_title' => get_string('data_collection_title', 'block_my_consent_block'),
-    'data_collection_one' => get_string('data_collection_one', 'block_my_consent_block'),
-    'data_collection_two' => get_string('data_collection_two', 'block_my_consent_block'),
-    'sozio_title' => get_string('sozio_title', 'block_my_consent_block'),
-    'sozio_one' => get_string('sozio_one', 'block_my_consent_block'),
-    'sozio_list_one' => get_string('sozio_list_one', 'block_my_consent_block'),
-    'sozio_list_two' => get_string('sozio_list_two', 'block_my_consent_block'),
-    'sozio_list_three' => get_string('sozio_list_three', 'block_my_consent_block'),
-    'anonymisation_title' => get_string('anonymisation_title', 'block_my_consent_block'),
-    'anonymisation_one' => get_string('anonymisation_one', 'block_my_consent_block'),
-    'anonymisation_two' => get_string('anonymisation_two', 'block_my_consent_block'),
-    'anonymisation_three' => get_string('anonymisation_three', 'block_my_consent_block'),
-    'anonymisation_four' => get_string('anonymisation_four', 'block_my_consent_block'),
-    
+    'consent' => $text->value,
 ];
 
 echo $OUTPUT->render_from_template('block_my_consent_block/consent', $templatecontext);

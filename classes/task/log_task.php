@@ -11,133 +11,118 @@
  */
 
 namespace block_my_consent_block\task;
-//defined('MOODLE_INTERNAL') || die();
 
 class log_task extends \core\task\scheduled_task {
     public function get_name() {
         return get_string('log_task_name', 'block_my_consent_block');
     }
-
+    
     public function execute() {
-        global $CFG, $DB;
-        $counter = 1;
-        //Delete old file for Logdata, because otherwise it will create errors
-        $DB->delete_records('files', array('filename'=> 'Logdata.csv'));
-        //get all users, that accepted the consent
-        $consent_user = $DB->get_records('disea_consent', array('choice' => '1'));
-        $consent_users = array_values($consent_user);
+        global $DB;
+        //get Time of last run of Log Task
+        $sql_t = 'SELECT MAX(timestart) as timestart FROM mdl_task_log WHERE classname = "block_my_consent_block\\\\task\\\\log_task"';
+        $t = $DB->get_records_sql($sql_t);
+        $t = array_values($t);
         
-        //Get the mail addresses for each course
-        $email = $DB->get_records('disea_mail');
-        $emails = array_values($email);
+        $t[0]->timestart = 0;
         
-        //Create dictionary for hash values and pseudonymisation
-        $get_pseudo = $DB->get_records('disea_pseudo');
-        $get_pseudo = array_values($get_pseudo);
-        $hash_dict = [];
-        foreach ($get_pseudo as $ps) {
-            $hash_dict[$ps->userid] = $ps->hash;
-        }
+        //SQL Query to get logdata in interval of one week
+        $query1 = 'SELECT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
+            'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
+            'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
+            'FROM mdl_logstore_standard_log l '.
+            'LEFT JOIN mdl_course c '.
+            'ON l.courseid = c.id '.
+            'LEFT JOIN (SELECT DISTINCT userid, choice FROM mdl_disea_consent_all d WHERE d.timemodified < '. intval($t[0]->timestart) .' ) disea '.
+            'ON l.userid = disea.userid '.
+            'WHERE (l.relateduserid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
+            'WHERE disea2.choice = 1) '.
+            'OR l.relateduserid IS NULL) '.
+            'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart) .
+            ' UNION SELECT DISTINCT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
+            'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
+            'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
+            'FROM mdl_logstore_standard_log l '.
+            'LEFT JOIN mdl_course c '.
+            'ON l.courseid = c.id '.
+            'LEFT JOIN (SELECT DISTINCT userid, choice FROM mdl_disea_consent_all d WHERE d.timemodified > '. intval($t[0]->timestart) .' ) disea '.
+            'ON l.userid = disea.userid '.
+            'WHERE (l.relateduserid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
+            'WHERE disea2.choice = 1) '.
+            'OR l.relateduserid IS NULL) '.
+            'AND disea.choice = 1 ';
+
+        //get Logdata from database
+        $log_data1 = $DB->get_records_sql($query1);
+        $data = array_values($log_data1);
+        mtrace("Daten aus Datenbank geholt");
+        mtrace("Number Rows: " . count($data));
         
-        
-        foreach ($emails as $m) {
-        
-            //create where clause from users
-            $where = 'WHERE (';
-            $count = 0;
-            foreach ($consent_users as $users) {
-                if($count == 0) {
-                    if($m->courseid == $users->courseid) {
-                        $where .= 'lsl.userid = '.$users->userid;
-                        $count++;
-                    }
-                } else {
-                    if ($m->courseid == $users->courseid) {
-                        $where .= ' OR lsl.userid = '.$users->userid;
-                    }
-                }
-            }
-            //If there is no user in this course who signed the consent with yes, skip sending the email
-            if($where === 'WHERE (') {
-                continue;
-            } else {
-                $where .= ')';
-            }
-            //Create full query to get all the logdata
-            $query = 'SELECT lsl.id, lsl.eventname, lsl.component, lsl.action, lsl.target, lsl.objecttable, '.
-                    'lsl.objectid, lsl.crud, lsl.edulevel, lsl.contextid, lsl.contextlevel, lsl.contextinstanceid, '.
-                    'lsl.userid, lsl.courseid, lsl.relateduserid, lsl.anonymous, lsl.other, lsl.timecreated, '.
-                    'lsl.origin, lsl.ip, lsl.realuserid FROM mdl_logstore_standard_log lsl '. $where . ' AND lsl.courseid = '. $m->courseid;
-            //get Logdata from database
-            $log_data = $DB->get_records_sql($query);
-            //save this Logdata
-            $data = array_values($log_data);
-            //Create CSV-File from logdata
+        $blocks = count($data) / 50000;
+        mtrace("Number of blocks: ". $blocks);
+        //For every block
+        for ($i = 0; $i < $blocks; $i++)
+        {
+            $cnt = 0;
+            $filename = date("Y-m-d--H.i.s").'__'.$i;
             $fh = fopen('php://temp', 'rw');
             fputcsv($fh, array('id','eventname','component','action','target',
-                'obejttable','objectid','crud','edulevel','contextid',
-                'contextlevel','contextinstanceid','userid','courseid',
-                'relateduserid','anonymous','other','timecreated',
-                'origin','ip','realuserid'));
-            if (count($data) > 0) {
-                foreach ($data as $row) {
-                    //Change user id with hash value
-                    if(array_key_exists($row->userid, $hash_dict)) {
-                        $row->userid = $hash_dict[$row->userid];
-                    }
-                    if(array_key_exists($row->relateduserid, $hash_dict) ) {
-                        $row->relateduserid = $hash_dict[$row->relateduserid];
-                    }
-                    fputcsv($fh, json_decode(json_encode($row), true));
+                'obejcttable','obejctid','contextid',
+                'contextlevel','contextinstanceid','userid','courseid','coursename_short',
+                'relateduserid','other','timecreated'), '|');
+            foreach ($data as $row) {
+                $cnt++;
+                if($cnt < $i*50000) {
+                    continue;
+                }
+                elseif($cnt > $i*50000 + 50000)
+                {
+                    break;
+                }
+                else{
+                    fputcsv($fh, json_decode(json_encode($row), true), '|');
                 }
             }
             rewind($fh);
             $csv = stream_get_contents($fh);
             fclose($fh);
             
-            // get Users who participate in sending the message 
-            // this has to be changed in the future, so that you are able to define the recipient in the settings of the plugin
-            $user = $DB->get_record('user', array('id' => 1));
+            mtrace("CSV String erstellt");
             
-            $userto = $DB->get_record('user', array('email' => $m->email));
+            //Get public key from config
+            $public_key = $DB->get_record('config_plugins', array('plugin' => 'block_my_consent_block', 'name' => 'pub_key'));
+            $public_key = $public_key->value;
             
-            //create message
-            $message = new \core\message\message();
-            $message->component = 'block_my_consent_block';
-            $message->name = 'logdata_disea';
-            $message->userfrom =\core_user::get_noreply_user();
-            $message->userto = $userto;
-            $message->subject = 'DiSEA Logdaten'.time();
-            $message->fullmessage = 'Anbei erhalten Sie die Logdaten der Nutzer, die zugestimmt haben beim DiSEA-Projekt mitzuwirken.';
-            $message->fullmessageformat = FORMAT_MARKDOWN;
-            $message->fullmessagehtml = '<p>Anbei erhalten Sie die Logdaten der Nutzer, die zugestimmt haben beim DiSEA-Projekt mitzuwirken.</p>';
-            $message->smallmessage = 'small message';
-            $message->notification = 1;
-            $message->contexturl = (new \moodle_url('/course/'))->out(false);
-            $message->contexturlname = 'Log Daten';
-            $message->replyto = 'noreply@dev-moodle.de';
-            $content = array('*' => array('header' => ' Sehr geehrte/r Mensch ', 'footer' => ' Auf bald, ihr Administrator ')); // Extra content for specific processor
-            $message->set_additional_content('email', $content);
+            mtrace("Public key geholt");
             
-            //Create a file instance(attachment)
-            $usercontext = \context_user::instance($user->id);
-            $file = new \stdClass();
-            $file->contextid = $usercontext->id;
-            $file->component = 'user';
-            $file->filearea  = 'private';
-            $file->itemid    = $counter++;
+            //Encryption of the csv String, so only the user with the private key can read it
+            $publicKey = openssl_get_publickey($public_key);
+            $encryptedMessage = "";
+            $max_length = 501;
+            $output = '';
+            while($csv) {
+                $input = substr($csv, 0, $max_length);
+                $csv = substr($csv, $max_length);
+                openssl_public_encrypt($input,$encryptedMessage,$publicKey);
+                $output.=$encryptedMessage;
+            }
+            $message = bin2hex($output);
+            
+            mtrace("Nachricht verschluesselt");
+            
+            $context = \context_system::instance();
+            
+            //creation of file
+            $file = new \stdClass;
+            $file->contextid = $context->id;
+            $file->component = 'my_consent_block';
+            $file->filearea  = 'disea';
+            $file->itemid    = 4;
             $file->filepath  = '/';
-            $file->filename  = 'logdata'.time().'.csv';
-            $file->source    = 'test';
-            
-            //attach file to message
+            $file->filename  = 'Log-'.$filename.'.txt';
+            $file->source    = 'Log-'.$filename.'.txt';
             $fs = get_file_storage();
-            $file = $fs->create_file_from_string($file, $csv);
-            $message->attachment = $file;
-            $message->attachname = 'logdata.csv';
-            //send message
-            $messageid = message_send($message);
+            $file = $fs->create_file_from_string($file, $message);
         }
     }
-    
 }
