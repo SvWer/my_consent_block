@@ -22,6 +22,7 @@
  
         'clonepermissionsfrom' => 'moodle/site:manageblocks'
     ),
+
             
         'block/my_consent_block:download' => array(
             'riskbitmask' => RISK_SPAM | RISK_XSS,
@@ -32,4 +33,5 @@
             ),
             'clonepermissionsfrom' => 'moodle/site:manageblocks'
         ),
+
 );
