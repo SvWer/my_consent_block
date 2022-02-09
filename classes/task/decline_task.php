@@ -79,7 +79,7 @@ class decline_task extends \core\task\scheduled_task {
 //#####################################################################################################################################
         //Export User Data with Consent Data
         //get all lines from disea_consent with name
-        $sql_c = 'Select d.id, d.userid, d.choice, u.firstname, u.lastname from mdl_disea_consent_all d '.
+        $sql_c = 'Select d.id, d.userid, d.choice, u.firstname, u.lastname, u.username from mdl_disea_consent_all d '.
                   'JOIN mdl_user u ON d.userid = u.id '.
                   'WHERE d.choice = 1';
         $consent_user = $DB->get_records_sql($sql_c);
@@ -87,7 +87,7 @@ class decline_task extends \core\task\scheduled_task {
 
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
-            fputcsv($fh, array('id','userid','choice','firstname','lastname'));
+            fputcsv($fh, array('id','userid','choice','firstname','lastname', 'username'));
             if (count($consent_users) > 0) {
                 foreach ($consent_users as $row) {
                     fputcsv($fh, json_decode(json_encode($row), true));
@@ -130,11 +130,17 @@ class decline_task extends \core\task\scheduled_task {
         
         //###########################################################################################################################
         //create statistik 
-        /*
-        $sql_c = 'Select d.courseid, COUNT(case when d.choice = 1 then 1 else null end) as yes, '.
-            'COUNT(case when d.choice = 0 then 1 else null end) as no '.
-            'from mdl_disea_consent d '.
-            'Group by d.courseid';
+        
+        $sql_c = 'Select a.courseid, COUNT(case when a.choice = 1 then 1 else null end) as yes, '.
+            'COUNT(case when a.choice = 0 then 1 else null end) as no '.
+            'from ( SELECT distinct l.userid, l.courseid, d.choice '.
+            'from mdl_logstore_standard_log l '.
+            'Left JOIN mdl_disea_consent_all d '.
+            'ON l.userid = d.userid '.
+            'WHERE l.userid > 1 '.
+            'AND l.courseid > 1 '.
+            ') as a '.
+            'Group by a.courseid';
         $consent_user = $DB->get_records_sql($sql_c);
         $consent_users = array_values($consent_user);
         
@@ -181,7 +187,7 @@ class decline_task extends \core\task\scheduled_task {
         $file->source    = 'Statistics-'.$filename.'.txt';
         $fs = get_file_storage();
         $file = $fs->create_file_from_string($file, $message);
-        */
+        
     }
     
 }
