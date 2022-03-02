@@ -36,10 +36,10 @@ class decline_task extends \core\task\scheduled_task {
         
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
-            fputcsv($fh, array('id','userid','choice','timecreated','timemodified'));
+            fputcsv($fh, array('id','userid','choice','timecreated','timemodified'), '|');
             if (count($consent_users) > 0) {
                 foreach ($consent_users as $row) {
-                    fputcsv($fh, json_decode(json_encode($row), true));
+                    fputcsv($fh, json_decode(json_encode($row), true), '|');
                 }
             }
             rewind($fh);
@@ -87,10 +87,10 @@ class decline_task extends \core\task\scheduled_task {
 
             //Create CSV-String from logdata
             $fh = fopen('php://temp', 'rw');
-            fputcsv($fh, array('id','userid','choice','firstname','lastname', 'username'));
+            fputcsv($fh, array('id','userid','choice','firstname','lastname', 'username'), '|');
             if (count($consent_users) > 0) {
                 foreach ($consent_users as $row) {
-                    fputcsv($fh, json_decode(json_encode($row), true));
+                    fputcsv($fh, json_decode(json_encode($row), true), '|');
                 }
             }
             rewind($fh);
@@ -146,10 +146,10 @@ class decline_task extends \core\task\scheduled_task {
         
         //Create CSV-String from logdata
         $fh = fopen('php://temp', 'rw');
-        fputcsv($fh, array('Kurs','Ja','Nein'));
+        fputcsv($fh, array('Kurs','Ja','Nein'), '|');
         if (count($consent_users) > 0) {
             foreach ($consent_users as $row) {
-                fputcsv($fh, json_decode(json_encode($row), true));
+                fputcsv($fh, json_decode(json_encode($row), true), '|');
             }
         }
         rewind($fh);

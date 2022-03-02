@@ -33,24 +33,22 @@ class log_task extends \core\task\scheduled_task {
             'FROM mdl_logstore_standard_log l '.
             'LEFT JOIN mdl_course c '.
             'ON l.courseid = c.id '.
-            'LEFT JOIN (SELECT DISTINCT userid, choice FROM mdl_disea_consent_all d WHERE d.timemodified < '. intval($t[0]->timestart) .' ) disea '.
-            'ON l.userid = disea.userid '.
             'WHERE (l.relateduserid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
-            'WHERE disea2.choice = 1) '.
-            'OR l.relateduserid IS NULL) '.
-            'AND disea.choice = 1 AND l.timecreated >'.intval($t[0]->timestart) .
+            'WHERE disea2.choice = 1 AND disea2.timecreated < '.intval($t[0]->timestart) .')' .
+            'OR l.userid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
+            'WHERE disea2.choice = 1 AND disea2.timecreated < '.intval($t[0]->timestart). '))' .
+            'AND l.timecreated >'.intval($t[0]->timestart) .
+            
             ' UNION SELECT DISTINCT l.id, l.eventname, l.component, l.action, l.target, l.objecttable, '.
             'l.objectid, l.contextid, l.contextlevel, l.contextinstanceid, '.
             'l.userid, c.id as courseid, c.shortname, l.relateduserid, l. other, l.timecreated '.
             'FROM mdl_logstore_standard_log l '.
             'LEFT JOIN mdl_course c '.
             'ON l.courseid = c.id '.
-            'LEFT JOIN (SELECT DISTINCT userid, choice FROM mdl_disea_consent_all d WHERE d.timemodified > '. intval($t[0]->timestart) .' ) disea '.
-            'ON l.userid = disea.userid '.
-            'WHERE (l.relateduserid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
-            'WHERE disea2.choice = 1) '.
-            'OR l.relateduserid IS NULL) '.
-            'AND disea.choice = 1 ';
+            'WHERE l.relateduserid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
+            'WHERE disea2.choice = 1 AND disea2.timemodified >'. intval($t[0]->timestart) .') '.
+            'OR l.userid IN (SELECT DISTINCT userid FROM mdl_disea_consent_all disea2 '.
+            'WHERE disea2.choice = 1 AND disea2.timemodified >'. intval($t[0]->timestart) .') ';
 
         //get Logdata from database
         $log_data1 = $DB->get_records_sql($query1);
