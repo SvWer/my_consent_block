@@ -39,8 +39,8 @@ $string['config_consent_description'] = 'Bitte geben Sie hier ihre Einwilligungs
 $string['config_counter_title'] = 'Counter f&uuml;r Anzeige der Einwilligungserkl&auml;rung';
 $string['config_counter_text'] = '&Uuml;ber diesen Counter kann gesteuert werden, wann die Einwilligungserkl&auml;rung erneut f&uuml;r die Studierenden angezeigt werden soll.';
 
-$string['agree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich zu</strong>.';
-$string['disagree'] = 'Der Erhebung, Verarbeitung und Nutzung meiner Daten zu Forschungszwecken <strong>stimme ich nicht zu</strong>.';     
+$string['agree'] = '<strong>Ich willige ein</strong>, dass meine Moodle Logdaten, wie auch die Pr&uuml;fungsdaten an das DiSEA-Projekt weitergegeben, gespeichert und zu Forschungszwecken genutzt werden.';
+$string['disagree'] = '<strong>Ich willige nicht ein</strong>, dass meine Moodle Logdaten, wie auch die Pr&uuml;fungsdaten an das DiSEA-Projekt weitergegeben, gespeichert und zu Forschungszwecken genutzt werden.';
 $string['no_choice'] = 'Bitte entscheiden Sie sich f&uuml;r eine Antwort!';
         
 $string['database_insert'] = 'Erfolgreich in der Datenbank eingetragen';
